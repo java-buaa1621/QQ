@@ -8,10 +8,6 @@ import javax.swing.ImageIcon;
 
 
 public abstract class ResourceManagement {
-	public static final boolean DEBUG = true;
-	public static final int MAX_HEAD_ICON = 100;
-	public static final int HEAD_ICON_LENX = 40;
-	public static final int HEAD_ICON_LENY = 40;
 	
 	public static Image getImage(String path) {
 		Image image = Toolkit.getDefaultToolkit().getImage("resource/image/" + path);

@@ -23,6 +23,7 @@ import qq.db.util.DBManager;
 import qq.db.util.LoginInfoDAO;
 import qq.db.util.UserInfoDAO;
 import qq.exception.AlertException;
+import qq.ui.component.AdapterFactory;
 import qq.ui.component.ContentPanelFactory;
 import qq.ui.component.IDTextField;
 import qq.ui.component.PasswordField;
@@ -87,6 +88,7 @@ public class LoginWindow extends JFrame {
 		IDField = new IDTextField();
 		IDField.setBounds(148, 117, 151, 27);
 		IDField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+		IDField.addFocusListener(AdapterFactory.createFocusAdapter(IDField, " QQ账号"));
 		contentPane.add(IDField);
 	}
 	
@@ -94,39 +96,28 @@ public class LoginWindow extends JFrame {
 		passwordField = new PasswordField();
 		passwordField.setBounds(148, 144, 151, 27);
 		passwordField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+		passwordField.addFocusListener(AdapterFactory.createFocusAdapter(passwordField, " 密码"));
 		getContentPane().add(passwordField);
 	}
 	
 	protected void initLoginButton() {
 		loginButton = new JButton("登录");
-		loginButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
 		loginButton.setBounds(183, 199, 93, 23);
 		loginButton.setBackground(Color.WHITE);
 		loginButton.setForeground(Color.BLACK);
 
-		// loginWindow变量用于响应鼠标关闭窗口
-		final JFrame loginWindow = this;
+		// 重载方法实现交互
+		loginButton.addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(loginButton)); 
+		
+		final JFrame loginWindow = this; // loginWindow变量用于响应鼠标关闭窗口
 		loginButton.addMouseListener(new MouseAdapter() {
-			public void mouseEntered(MouseEvent e) {
-				loginButton.setForeground(Color.GRAY);
-			}
-			public void mouseExited(MouseEvent e) {
-				loginButton.setForeground(Color.BLACK);
-			}
-			
 			/**
 			 * 处理登录时期遇到的一切因用户造成的AlertException并转换为窗口提示
 			 */
 			public void mouseClicked(MouseEvent e) {
 				try {
-					// TODO add in & change
-					int ID = IDField.getID();
-					String password = passwordField.getPasswordString();
-					LoginInfo loginInfo = new LoginInfo(ID, password);
-					
+					LoginInfo loginInfo = buildLoginInfo();
 					if (DBManager.checkLogin(loginInfo) == true) {
 						loginWindow.dispose();
 						MainWindow.startUp(loginInfo.getID());
@@ -137,6 +128,7 @@ public class LoginWindow extends JFrame {
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 				} catch (AlertException e1) {
+					// 以窗口形式向用户报错
 					AlertWindow.startUp(e1.getMessage());
 				}
 			}
@@ -150,20 +142,11 @@ public class LoginWindow extends JFrame {
 		registerLabel.setBackground(Color.WHITE);
 		registerLabel.setForeground(Color.BLACK);
 		
+		// 重载方法添加监听器
+		registerLabel.addMouseListener(AdapterFactory.createMouseEnterAndExitAdapter(registerLabel));
 		registerLabel.addMouseListener(new MouseAdapter() {
-			// 鼠标进入label改变颜色
+			// 点击弹出登录界面
 			@Override
-			public void mouseEntered(MouseEvent e) {
-				registerLabel.setForeground(Color.GRAY);
-			}
-			@Override
-			public void mouseExited(MouseEvent e) {
-				registerLabel.setForeground(Color.BLACK);
-			}
-			/**
-			 * 弹出登录界面
-			 * @Override
-			 */
 			public void mouseClicked(MouseEvent e) {
 				RegisterWindow.startUp();
 			}
@@ -177,18 +160,20 @@ public class LoginWindow extends JFrame {
 		findPasswordLabel.setBackground(Color.WHITE);
 		findPasswordLabel.setForeground(Color.BLACK);
 		
-		findPasswordLabel.addMouseListener(new MouseAdapter() {
-			// 鼠标进入label改变颜色
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				findPasswordLabel.setForeground(Color.GRAY);
-			}
-			@Override
-			public void mouseExited(MouseEvent e) {
-				findPasswordLabel.setForeground(Color.BLACK);
-			}
-		});
+		// 重载方法添加监听器
+		findPasswordLabel.addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(findPasswordLabel));
 		contentPane.add(findPasswordLabel);
+	}
+	
+	
+	// ------------------------- 逻辑部分 ------------------------- //
+	
+	private LoginInfo buildLoginInfo() throws AlertException {
+		int ID = IDField.getID();
+		String password = passwordField.getPasswordString();
+		LoginInfo loginInfo = new LoginInfo(ID, password);
+		return loginInfo;
 	}
 	
 }

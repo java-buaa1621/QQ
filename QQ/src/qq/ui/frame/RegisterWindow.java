@@ -103,14 +103,16 @@ public class RegisterWindow extends JFrame {
 		IDField = new IDTextField();
 		IDField.setColumns(10);
 		IDField.setBounds(106, 11, 263, 29);
+		IDField.addFocusListener(AdapterFactory.createFocusAdapter(IDField, " 请输入账号"));
 		contentPane.add(IDField);
 	}
 	
 	private void initNameField (){
 		nameField = new JTextField();
 		nameField.setBounds(106, 50, 263, 29);
-		contentPane.add(nameField);
 		nameField.setColumns(10);
+		nameField.addFocusListener(AdapterFactory.createFocusAdapter(nameField, " 请输入昵称"));
+		contentPane.add(nameField);
 	}
 	
 	private void initAgeComboBox() {
@@ -154,6 +156,7 @@ public class RegisterWindow extends JFrame {
 	private void initPasswordField() {
 		passwordField = new PasswordField();
 		passwordField.setBounds(106, 283, 263, 29);
+		passwordField.addFocusListener(AdapterFactory.createFocusAdapter(passwordField, " 请输入密码"));
 		contentPane.add(passwordField);
 	}
 	
@@ -161,7 +164,7 @@ public class RegisterWindow extends JFrame {
 	 * 切换到选择头像界面 
 	 */
 	private void initSelectHeadButton() {
-		selectHeadButton = new JButton("点击选择头像");
+		selectHeadButton = new JButton("选择头像");
 		final RegisterWindow registerWindow = this;
 		selectHeadButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -243,7 +246,7 @@ public class RegisterWindow extends JFrame {
 	 * @param headIconIndex 头像标号
 	 */
 	protected void setHeadIconIndex(int headIconIndex) {
-		if(!Func.isValid(headIconIndex, 1, ResourceManagement.MAX_HEAD_ICON))
+		if(!Func.isValid(headIconIndex, 1, Constant.MAX_HEAD_ICON))
 			throw new IllegalArgumentException("headIconIndex出范围");
 		this.headIconIndex = headIconIndex;
 	}

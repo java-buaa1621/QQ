@@ -4,6 +4,7 @@ import javax.swing.JPasswordField;
 
 import qq.db.info.LoginInfo;
 import qq.exception.AlertException;
+import qq.util.Constant;
 
 public class PasswordField extends JPasswordField{
 	/**

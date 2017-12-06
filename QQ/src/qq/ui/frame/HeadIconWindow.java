@@ -1,6 +1,7 @@
 package qq.ui.frame;
 
 import java.awt.BorderLayout;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -36,6 +37,7 @@ import org.omg.CORBA.PUBLIC_MEMBER;
 import com.mysql.jdbc.Constants;
 
 import qq.util.ResourceManagement;
+import qq.util.*;
 
 public class HeadIconWindow extends JFrame {
 
@@ -102,8 +104,8 @@ public class HeadIconWindow extends JFrame {
 		headGroup = new ButtonGroup(); // 初始化ButtonGroup
 		
 		// 图片标号从1到ResourceManagement.MAX_HEAD_ICON
-		headButtons = new JRadioButton[ResourceManagement.MAX_HEAD_ICON + 1];
-		for(int i = 1;i <= ResourceManagement.MAX_HEAD_ICON; i++) {
+		headButtons = new JRadioButton[Constant.MAX_HEAD_ICON + 1];
+		for(int i = 1;i <= Constant.MAX_HEAD_ICON; i++) {
 			headButtons[i] = initHeadButton(i);
 			headIconPane.add(headButtons[i]); // 添加进HeadIconPane
 			headGroup.add(headButtons[i]); // 添加进ButtonGroup
@@ -114,9 +116,9 @@ public class HeadIconWindow extends JFrame {
 		final int borderX = 10;
 		final int borderY = 10;
 		int col = 7;
-		int colWidth = borderX + gapX + ResourceManagement.HEAD_ICON_LENX; 
-		int row = (ResourceManagement.MAX_HEAD_ICON + (col-1)) / col; // 根据列数得到行数
-		int rowHeight = borderY + gapY + ResourceManagement.HEAD_ICON_LENY;
+		int colWidth = borderX + gapX + Constant.HEAD_ICON_LENX; 
+		int row = (Constant.MAX_HEAD_ICON + (col-1)) / col; // 根据列数得到行数
+		int rowHeight = borderY + gapY + Constant.HEAD_ICON_LENY;
 		headIconPane.setPreferredSize(
 				new Dimension(col * colWidth + 10, row * rowHeight + 10)); // 加10防止最后一行紧挨底
 		
@@ -168,7 +170,7 @@ public class HeadIconWindow extends JFrame {
 	 */
 	private int getHeadIconIndex() {
 		int ans = 0;
-		for(int i = 1; i <= ResourceManagement.MAX_HEAD_ICON; i++){
+		for(int i = 1; i <= Constant.MAX_HEAD_ICON; i++){
 			if(headButtons[i].isSelected()){
 				ans = i;
 			}

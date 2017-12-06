@@ -39,11 +39,14 @@ import qq.db.util.LoginInfoDAO;
 import qq.db.util.UserInfoDAO;
 import qq.ui.friend.FriTreeCellRenderer;
 import qq.ui.friend.FriTreeNode;
+import qq.util.Constant;
 import qq.util.ResourceManagement;
 
 import javax.swing.SwingConstants;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+
+import com.mysql.jdbc.Constants;
 
 public class MainWindow extends JFrame {
 
@@ -101,7 +104,7 @@ public class MainWindow extends JFrame {
 		if(info == null) {
 			// 此处if里面是为了单元化测试
 			// TODO: throw new IllegalArgumentException();
-			if(ResourceManagement.DEBUG){
+			if(Constant.DEBUG){
 				this.initHeadPane();
 				this.initSwitchPane();
 				this.initMainPane();
@@ -132,7 +135,7 @@ public class MainWindow extends JFrame {
 		
 		JLabel imageLabel = new JLabel(headIcon);
 		imageLabel.setBounds(10, 10, 
-				ResourceManagement.HEAD_ICON_LENX, ResourceManagement.HEAD_ICON_LENY);
+				Constant.HEAD_ICON_LENX, Constant.HEAD_ICON_LENY);
 		headPane.add(imageLabel);
 		
 		JLabel userNameLabel = new JLabel(userName);
@@ -282,7 +285,7 @@ public class MainWindow extends JFrame {
 		
 		JLabel imageLabel = new JLabel();
 		imageLabel.setBounds(10, 10, 
-				ResourceManagement.HEAD_ICON_LENX, ResourceManagement.HEAD_ICON_LENY);
+				Constant.HEAD_ICON_LENX, Constant.HEAD_ICON_LENY);
 		imageLabel.setIcon(headIcon);
 		headPane.add(imageLabel);
 		
