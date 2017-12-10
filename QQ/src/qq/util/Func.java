@@ -40,5 +40,17 @@ public abstract class Func {
 	public static boolean isPositiveInt(int num){
 		return num > 0;
 	}
-	 
+	
+	/**
+	 * 通过物品总数和物品列数得到物品行数
+	 * @param total 大于等于0的物品总数
+	 * @param colNum 大于0的物品列数
+	 * @return 求得的物品行数，若total小于0或colNum小于等于0则返回0
+	 */
+	public static int getRowNum(int total, int colNum) {
+		if(total < 0 || colNum <= 0)
+			return 0;
+		return (total + colNum - 1) / colNum;
+	}
+	
 }

@@ -23,10 +23,9 @@ import qq.db.util.DBManager;
 import qq.db.util.LoginInfoDAO;
 import qq.db.util.UserInfoDAO;
 import qq.exception.AlertException;
-import qq.ui.component.AdapterFactory;
-import qq.ui.component.ContentPanelFactory;
-import qq.ui.component.IDTextField;
-import qq.ui.component.PasswordField;
+import qq.ui.component.*;
+import qq.ui.componentFactory.AdapterFactory;
+import qq.ui.componentFactory.PanelFactory;
 import qq.util.ResourceManagement;
 
 import java.awt.event.ActionListener;
@@ -73,7 +72,7 @@ public class LoginWindow extends JFrame {
 		setIconImage(ResourceManagement.getImage("qq_icon.png"));
 		
 		// Ä¬ÈÏcontentPane
-		contentPane = ContentPanelFactory.createDafaultContentPanel();
+		contentPane = PanelFactory.createDafaultContentPanel();
 		setContentPane(contentPane);
 		
 		// ³õÊ¼»¯×é¼þ
@@ -88,7 +87,7 @@ public class LoginWindow extends JFrame {
 		IDField = new IDTextField();
 		IDField.setBounds(148, 117, 151, 27);
 		IDField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-		IDField.addFocusListener(AdapterFactory.createFocusAdapter(IDField, " QQÕËºÅ"));
+		IDField.addFocusListener(AdapterFactory.createTextFieldFocusAdapter(IDField, " QQÕËºÅ"));
 		contentPane.add(IDField);
 	}
 	
@@ -96,7 +95,7 @@ public class LoginWindow extends JFrame {
 		passwordField = new PasswordField();
 		passwordField.setBounds(148, 144, 151, 27);
 		passwordField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-		passwordField.addFocusListener(AdapterFactory.createFocusAdapter(passwordField, " ÃÜÂë"));
+		passwordField.addFocusListener(AdapterFactory.createTextFieldFocusAdapter(passwordField, " ÃÜÂë"));
 		getContentPane().add(passwordField);
 	}
 	

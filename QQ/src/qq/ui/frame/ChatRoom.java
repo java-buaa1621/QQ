@@ -16,6 +16,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 
+import qq.ui.component.UserInfoPanel;
 import qq.util.ResourceManagement;
 
 import java.awt.Color;
@@ -27,20 +28,25 @@ import java.awt.event.ActionEvent;
 import java.net.Socket;
 
 import javax.swing.JTextArea;
+
+import qq.db.info.UserInfo;
 import qq.socket.*;
 
 public class ChatRoom extends JFrame {
 
+	// 与JFrame对象对联的线程
+	private SocketWriterThread writerThread;
+	private SocketReaderThread readerThread;
+	// 图形组件
 	private JPanel contentPane;
+	private UserInfoPanel headPane;
 	// 用户输入区域
 	private JPanel inputPanel;
 	private JTextArea inputArea;
 	// 历史消息展示区
 	private JPanel historyPane;
 	private JTextArea historyArea;
-	// 与JFrame对象对联的线程
-	private SocketWriterThread writerThread;
-	private SocketReaderThread readerThread;
+
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -78,28 +84,16 @@ public class ChatRoom extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null); // 绝对布局
 		
-		this.initHeadLabel("zzx", "i'm brillient", ResourceManagement.getImage("wolffy.jpg"));
+		this.initHeadPanel(new UserInfo(331079072, "zzx", "男", 20, "i'm brillient", 5));
 		this.initQQShow(ResourceManagement.getImage("touxiang.jpg"));
 		this.initInputPanel();
 		this.initHistoryPanel();                   
 	}
 
-	protected void initHeadLabel(String userName, String userMotto, Image image) {
-		if(userName == null || userMotto == null || image == null)
-			throw new NullPointerException("对方用户名或个性签名或头像丢失");
-		
-		JLabel headLabel = new JLabel();
-		headLabel.setBounds(0, 0, 581, 93);
-		contentPane.add(headLabel);
-		
-		// 设置JLable的图片
-        image = image.getScaledInstance(50, 50, Image.SCALE_DEFAULT);
-        headLabel.setIcon(new ImageIcon(image));
-        // 设置JLable的图片与文字之间的距离	
-        headLabel.setIconTextGap(20); 
-		// 设置JLable的文字
-		String text = "<html>" + userName + "<br/>" + userMotto + "</html>";
-		headLabel.setText(text);
+	protected void initHeadPanel(UserInfo info) {
+		headPane = new UserInfoPanel(info);
+		headPane.setBounds(0, 0, 581, 93);
+		contentPane.add(headPane);
 	}
 	
 	protected void initQQShow(Image qqShow){

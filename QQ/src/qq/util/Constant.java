@@ -1,5 +1,7 @@
 package qq.util;
 
+import java.awt.Dimension;
+
 public class Constant {
 	public static final boolean DEBUG = true;
 	
@@ -9,4 +11,6 @@ public class Constant {
 	
 	public static final char pwFieldDefaultChar = (char)8226; // 默认加密字符
 	public static final char pwFieldPlainTextChar = (char)0; // 明文
+	
+	public static final Dimension userInfoPanelSize = new Dimension(180, 70);
 }

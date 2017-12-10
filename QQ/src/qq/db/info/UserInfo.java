@@ -24,6 +24,7 @@ public class UserInfo {
 	 * @param sex 字符串，只能男或女
 	 * @param age 正整形数
 	 * @param motto 字符串，长度小于等于100
+	 * @param headIconIndex 头像编号
 	 */
 	public UserInfo(int ID, String name, String sex, int age, String motto, int headIconIndex)  {
 		if (!Func.isPositiveInt(ID) | age < 0 

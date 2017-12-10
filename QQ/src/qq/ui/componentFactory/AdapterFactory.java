@@ -1,4 +1,4 @@
-package qq.ui.component;
+package qq.ui.componentFactory;
 
 import java.awt.Color;
 import java.awt.event.FocusAdapter;
@@ -23,7 +23,7 @@ public final class AdapterFactory {
 	 * @param text 提示文本
 	 * @return 重载实现的FocusAdapter子类
 	 */
-	public static FocusAdapter createFocusAdapter(final JTextField textField, final String text) {
+	public static FocusAdapter createTextFieldFocusAdapter(final JTextField textField, final String text) {
 		// 初始化时显示信息
 		textField.setText(text);
 		if(textField instanceof JPasswordField)

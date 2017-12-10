@@ -12,6 +12,8 @@ import qq.db.info.*;
 import qq.db.util.*;
 import qq.exception.*;
 import qq.ui.component.*;
+import qq.ui.componentFactory.AdapterFactory;
+import qq.ui.componentFactory.PanelFactory;
 import qq.util.*;
 
 public class RegisterWindow extends JFrame {
@@ -58,7 +60,7 @@ public class RegisterWindow extends JFrame {
 		setIconImage(ResourceManagement.getImage("qq_icon.png"));
 		
 		// ƒ¨»œcontentPane
-		contentPane = ContentPanelFactory.createDafaultContentPanel();
+		contentPane = PanelFactory.createDafaultContentPanel();
 		setContentPane(contentPane);
 		
 		initLabels();
@@ -103,7 +105,7 @@ public class RegisterWindow extends JFrame {
 		IDField = new IDTextField();
 		IDField.setColumns(10);
 		IDField.setBounds(106, 11, 263, 29);
-		IDField.addFocusListener(AdapterFactory.createFocusAdapter(IDField, " «Î ‰»Î’À∫≈"));
+		IDField.addFocusListener(AdapterFactory.createTextFieldFocusAdapter(IDField, " «Î ‰»Î’À∫≈"));
 		contentPane.add(IDField);
 	}
 	
@@ -111,7 +113,8 @@ public class RegisterWindow extends JFrame {
 		nameField = new JTextField();
 		nameField.setBounds(106, 50, 263, 29);
 		nameField.setColumns(10);
-		nameField.addFocusListener(AdapterFactory.createFocusAdapter(nameField, " «Î ‰»ÎÍ«≥∆"));
+		nameField.addFocusListener(
+				AdapterFactory.createTextFieldFocusAdapter(nameField, " «Î ‰»ÎÍ«≥∆"));
 		contentPane.add(nameField);
 	}
 	
@@ -156,7 +159,8 @@ public class RegisterWindow extends JFrame {
 	private void initPasswordField() {
 		passwordField = new PasswordField();
 		passwordField.setBounds(106, 283, 263, 29);
-		passwordField.addFocusListener(AdapterFactory.createFocusAdapter(passwordField, " «Î ‰»Î√‹¬Î"));
+		passwordField.addFocusListener(
+				AdapterFactory.createTextFieldFocusAdapter(passwordField, " «Î ‰»Î√‹¬Î"));
 		contentPane.add(passwordField);
 	}
 	

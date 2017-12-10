@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Rectangle;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -37,6 +38,7 @@ import qq.db.util.DBManager;
 import qq.db.util.FriendListDAO;
 import qq.db.util.LoginInfoDAO;
 import qq.db.util.UserInfoDAO;
+import qq.ui.component.UserInfoPanel;
 import qq.ui.friend.FriTreeCellRenderer;
 import qq.ui.friend.FriTreeNode;
 import qq.util.Constant;
@@ -55,11 +57,11 @@ public class MainWindow extends JFrame {
 	// 加起来略小于WINDOW_HEIGHT, 因为窗口顶有高度
 	final int headPaneHeight =  (int)(WINDOW_HEIGHT * 0.15);
 	final int switchPaneHeight =  (int)(WINDOW_HEIGHT * 0.07);
-	final int mainPaneHeight =  (int)(WINDOW_HEIGHT * 0.375);
+	final int mainPaneHeight =  (int)(WINDOW_HEIGHT * 0.675);
 	final int funcPaneHeight =  (int)(WINDOW_HEIGHT * 0.075);
 	
 	private JPanel contentPane;
-	private JPanel headPane;
+	private UserInfoPanel headPane;
 	private JPanel switchPane;
 	private JPanel mainPane;
 	private JPanel funcPane;
@@ -121,30 +123,9 @@ public class MainWindow extends JFrame {
 	}
 	
 	protected void initHeadPane(final UserInfo info) {
-		if (info == null)
-			throw new IllegalArgumentException();
-		
-		ImageIcon headIcon = ResourceManagement.getHeadIcon(info.getHeadIconIndex());
-		String userName = info.getName();
-		String userMotto = info.getMotto();
-		
-		headPane = new JPanel();
-		headPane.setBounds(0, 0, WINDOW_WIDTH, headPaneHeight);
-		this.contentPane.add(headPane);
-		headPane.setLayout(null); // 绝对布局
-		
-		JLabel imageLabel = new JLabel(headIcon);
-		imageLabel.setBounds(10, 10, 
-				Constant.HEAD_ICON_LENX, Constant.HEAD_ICON_LENY);
-		headPane.add(imageLabel);
-		
-		JLabel userNameLabel = new JLabel(userName);
-		userNameLabel.setBounds(96, 10, 48, 15);
-		headPane.add(userNameLabel);
-		
-		JLabel userMottoLabel = new JLabel(userMotto);
-		userMottoLabel.setBounds(96, 55, 180, 15);
-		headPane.add(userMottoLabel);
+		Rectangle pos = new Rectangle(0, 0, WINDOW_WIDTH, headPaneHeight);
+		headPane = new UserInfoPanel(info, pos);
+		contentPane.add(headPane);
 	}
 	
 	protected void initSwitchPane() {
@@ -204,6 +185,7 @@ public class MainWindow extends JFrame {
 		tree.setRowHeight(50);//树节点的高度
 		tree.setToggleClickCount(1); //设置展开节点之前的鼠标单击数为1
 		mainPane.add(tree);
+		
 		// 加入JScrollPane
 		JScrollPane treeView = new JScrollPane(tree);
 		mainPane.add(treeView, BorderLayout.CENTER);
@@ -274,28 +256,10 @@ public class MainWindow extends JFrame {
 	// ------------------------- 重载方法用于单元测试 ------------------------- //
 	
 	protected void initHeadPane() {
-		ImageIcon headIcon = ResourceManagement.getHeadIcon(1);
-		String userName = "zzx";
-		String userMotto = "this is a long motto";
-		
-		headPane = new JPanel();
-		headPane.setBounds(0, 0, WINDOW_WIDTH, headPaneHeight);
-		this.contentPane.add(headPane);
-		headPane.setLayout(null); // 绝对布局
-		
-		JLabel imageLabel = new JLabel();
-		imageLabel.setBounds(10, 10, 
-				Constant.HEAD_ICON_LENX, Constant.HEAD_ICON_LENY);
-		imageLabel.setIcon(headIcon);
-		headPane.add(imageLabel);
-		
-		JLabel userNameLabel = new JLabel(userName);
-		userNameLabel.setBounds(96, 10, 48, 15);
-		headPane.add(userNameLabel);
-		
-		JLabel userMottoLabel = new JLabel(userMotto);
-		userMottoLabel.setBounds(96, 55, 180, 15);
-		headPane.add(userMottoLabel);
+		Rectangle pos = new Rectangle(0, 0, WINDOW_WIDTH, headPaneHeight);
+		headPane = new UserInfoPanel(new UserInfo(
+				331079072, "zzx", "男", 20, "this is a motto", 1), pos);
+		contentPane.add(headPane);
 	}
 	
 	protected void initMainPane() {
