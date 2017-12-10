@@ -3,7 +3,7 @@ package qq.db.info;
 import java.io.IOException;
 
 import qq.util.Func;
-
+123
 public class FriendInfo {
 	public static final int MAX_LEN = 100;
 	
