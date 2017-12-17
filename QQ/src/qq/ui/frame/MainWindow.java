@@ -279,13 +279,22 @@ public class MainWindow extends JFrame {
 		root.addChild(node1);	
 		root.addChild(node2);	
 		root.addChild(node3);	
-		UserInfo info1 = new UserInfo(123, "zhangsan", "男", 1, "5201314", 2);
-		UserInfo info2 = new UserInfo(2, "wangsaer", "女", 5, "hhhhhh", 16);
-		FriTreeNode zhangsan = new FriTreeNode(info1);
-		FriTreeNode wangsaer = new FriTreeNode(info2);
-		//node1.addChild(zhangsan);
-		//node2.addChild(wangsaer);
-
+		FriTreeNode zhangsan = new FriTreeNode("zhangsan", "5201314", 1);
+		FriTreeNode wangsaer = new FriTreeNode("wangsaer", "1524110", 2);
+		FriTreeNode mosheng1 = new FriTreeNode("mosheng1", "123", 3);
+		FriTreeNode mosheng2 = new FriTreeNode("mosheng2", "234", 4);
+		FriTreeNode mosheng3 = new FriTreeNode("mosheng3", "345", 5);
+		FriTreeNode mosheng4 = new FriTreeNode("mosheng4", "456", 6);
+		FriTreeNode mosheng5 = new FriTreeNode("mosheng5", "567", 7);
+		FriTreeNode mosheng6 = new FriTreeNode("mosheng6", "678", 8);
+		node1.addChild(zhangsan);
+		node2.addChild(wangsaer);
+		node3.addChild(mosheng1);
+		node3.addChild(mosheng2);
+		node3.addChild(mosheng3);
+		node3.addChild(mosheng4);
+		node3.addChild(mosheng5);
+		node3.addChild(mosheng6);
 		
 		// 创建树并加入jMode, renderer等组件
 		DefaultTreeModel jMode = new DefaultTreeModel(root);

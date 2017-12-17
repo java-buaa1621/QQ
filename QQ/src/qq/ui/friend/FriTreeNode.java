@@ -12,8 +12,10 @@ import qq.util.ResourceManagement;
 
 public class FriTreeNode implements TreeNode{
 
-	protected UserInfo info;
 	protected String nodeName;
+	protected ImageIcon icon;
+	protected String userName;
+	protected String userMotto;
 	protected TreeNode parent;
 	protected ArrayList<TreeNode> children;
 	
@@ -28,8 +30,14 @@ public class FriTreeNode implements TreeNode{
 		this.nodeName = nodeName;
 	}
 	
-	public FriTreeNode(UserInfo info){
-		this.info = info;
+	public FriTreeNode(String userName, String userMotto, int headIconIndex){
+		this.userName = userName;
+		this.userMotto = userMotto;
+		this.icon = ResourceManagement.getHeadIcon(headIconIndex);
+	}
+	
+	public FriTreeNode(UserInfo info) {
+		this(info.getName(), info.getMotto(), info.getHeadIconIndex());
 	}
 	
 	public void addChild(FriTreeNode child) {
@@ -109,8 +117,16 @@ public class FriTreeNode implements TreeNode{
 		return this.nodeName;
 	}
 	
-	public UserInfo getUserInfo() {
-		return this.info;
+	public ImageIcon getImageIcon() {
+		return this.icon;	
+	}
+	
+	public String getUserName() {
+		return this.userName;	
+	}
+	
+	public String getUserMotto() {
+		return this.userMotto;	
 	}
 	
 }
