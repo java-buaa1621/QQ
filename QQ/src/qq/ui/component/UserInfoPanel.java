@@ -1,5 +1,6 @@
 package qq.ui.component;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -47,8 +48,6 @@ public class UserInfoPanel extends JPanel{
 		userMottoLabel.setBounds(96, 55, 180, 15);
 		add(userMottoLabel);
 		
-		
-		addMouseListener(AdapterFactory.createMouseEnterAndExitAdapter(this));
 	}
 	
 	/**
@@ -67,6 +66,16 @@ public class UserInfoPanel extends JPanel{
 		    	action.actionPerformed(null);
 		    }
 		});
+	}
+	
+	/**
+	 * Êó±ê¾Û½¹±ä»»ÑÕÉ«
+	 * @param enterColor
+	 * @param exitColor
+	 */
+	public void setFocusColor(Color enterColor, Color exitColor) {
+		addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(this, enterColor, exitColor));
 	}
 	
 }

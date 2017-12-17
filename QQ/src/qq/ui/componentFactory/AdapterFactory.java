@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import javax.management.InstanceAlreadyExistsException;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
@@ -78,15 +79,25 @@ public final class AdapterFactory {
 	 */
 	public static MouseAdapter createMouseEnterAndExitAdapter(
 			final JComponent component, final Color enterColor, final Color exitColor) {
-
-		return new MouseAdapter() {
-			public void mouseEntered(MouseEvent e) {
-				component.setForeground(enterColor);
-			}
-			public void mouseExited(MouseEvent e) {
-				component.setForeground(exitColor);
-			}
-		};
+		if(component instanceof JPanel) {
+			return new MouseAdapter() {
+				public void mouseEntered(MouseEvent e) {
+					component.setBackground(enterColor);
+				}
+				public void mouseExited(MouseEvent e) {
+					component.setBackground(exitColor);
+				}
+			};
+		} else {
+			return new MouseAdapter() {
+				public void mouseEntered(MouseEvent e) {
+					component.setForeground(enterColor);
+				}
+				public void mouseExited(MouseEvent e) {
+					component.setForeground(exitColor);
+				}
+			};
+		}
 	}
 	
 	/**
