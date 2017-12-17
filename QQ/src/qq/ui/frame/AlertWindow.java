@@ -51,6 +51,7 @@ public class AlertWindow extends JFrame {
 		contentPane.setLayout(null);
 		
 		JTextArea textArea = new JTextArea(warning);
+		textArea.setEditable(false);
 		textArea.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);

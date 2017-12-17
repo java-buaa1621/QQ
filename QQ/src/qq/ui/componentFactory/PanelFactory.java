@@ -10,6 +10,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -67,17 +68,18 @@ public abstract class PanelFactory {
 	
 	/**
 	 * 创建内部内容采取流动布局jScrollPane
+	 * @param T
 	 */
-	public static FlowComponentScrollPanel createFlowComponentScrollPane(
-			Rectangle panelPos, ArrayList<? extends JComponent> components, int colNum, Dimension compSize) {
-		return new FlowComponentScrollPanel(panelPos, components, colNum, compSize);
+	public static <T extends JComponent> FlowComponentScrollPanel<T> createFlowComponentScrollPane(
+			Rectangle panelPos, ArrayList<T> components, int colNum, Dimension compSize) {
+		return new FlowComponentScrollPanel<T>(panelPos, components, colNum, compSize);
 	}
 	
-	public static FlowComponentScrollPanel createFlowComponentScrollPane(
-			Rectangle panelPos, ArrayList<? extends JComponent> components, 
+	public static <T extends JComponent> FlowComponentScrollPanel<T> createFlowComponentScrollPane(
+			Rectangle panelPos, ArrayList<T> components, 
 			int gapX, int gapY, int colNum, Dimension compSize, int compBorderWidth) {
 		
-		return new FlowComponentScrollPanel(
+		return new FlowComponentScrollPanel<T>(
 				panelPos, components, gapX, gapY, colNum, compSize, compBorderWidth);
 	}
 	

@@ -48,7 +48,7 @@ public class HeadIconWindow extends JFrame {
 	
 	private JPanel contentPane;
 	private JButton confirmButton;
-	private FlowComponentScrollPanel headIconPane;
+	private FlowComponentScrollPanel<JRadioButton> headIconPane;
 	private ButtonGroup headGroup;
 
 	public static void main(String[] args) {
@@ -105,7 +105,7 @@ public class HeadIconWindow extends JFrame {
 		JRadioButton first = headButtons.get(toIndex(1));
 		first.setSelected(true); // 1号默认选中
 		
-		Dimension buttonSize = new Dimension(Constant.HEAD_ICON_LENX, Constant.HEAD_ICON_LENY);
+		Dimension buttonSize = new Dimension(Constant.HEAD_ICON_LENX,Constant.HEAD_ICON_LENY);
 		headIconPane = PanelFactory.createFlowComponentScrollPane(
 				new Rectangle(10, 30, 410, 200), headButtons, 7, buttonSize);
 		contentPane.add(headIconPane);
@@ -125,15 +125,12 @@ public class HeadIconWindow extends JFrame {
 	private void initConfirmButton() {
 		confirmButton = new JButton("确认");
 		final HeadIconWindow headIconWindow = this;
-		final FlowComponentScrollPanel headPane = headIconPane;
+		final FlowComponentScrollPanel<JRadioButton> headPane = headIconPane;
 		confirmButton.addActionListener(new ActionListener() {
-			// 由于java泛型动态擦除技术，无法动态检查泛型，所以函数中未进行类型检查
-			@SuppressWarnings("unchecked")
 			public void actionPerformed(ActionEvent e) {
 				headIconWindow.dispose();
-				ArrayList<JButton> jButtons = (ArrayList<? super JButton>) headIconPane.getComps();
-				int index = ButtonFunc.getSelectedIndex(
-						); // 未检查类型转换安全
+				ArrayList<JRadioButton> rButtons = headIconPane.getComps();
+				int index = ButtonFunc.getSelectedIndex(rButtons);
 				callerWindow.setHeadIconIndex(toIconIndex(index));
 			}
 		});
@@ -143,10 +140,20 @@ public class HeadIconWindow extends JFrame {
 	
 	//------------------------------ 逻辑部分 --------------------------//
 	
-	private int toIconIndex(int arrayIndex){
-		return ++arrayIndex;
+	/**
+	 * 
+	 * @param arrayIndex
+	 * @return index -> iconIndex
+	 */
+	private int toIconIndex(int index){
+		return ++index;
 	}
 	
+	/**
+	 * 
+	 * @param iconIndex
+	 * @return iconIndex -> index
+	 */
 	private int toIndex(int iconIndex) {
 		return --iconIndex;
 	}

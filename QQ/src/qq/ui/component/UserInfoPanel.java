@@ -1,16 +1,24 @@
 package qq.ui.component;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import qq.db.info.UserInfo;
+import qq.ui.componentFactory.AdapterFactory;
 import qq.util.Constant;
 import qq.util.ResourceManagement;
 
 public class UserInfoPanel extends JPanel{
+	
+	public static final Dimension minPanelSize = new Dimension(170, 70);
 	
 	/**
 	 * 大小由内部组件大小决定
@@ -38,6 +46,9 @@ public class UserInfoPanel extends JPanel{
 		JLabel userMottoLabel = new JLabel(userMotto);
 		userMottoLabel.setBounds(96, 55, 180, 15);
 		add(userMottoLabel);
+		
+		
+		addMouseListener(AdapterFactory.createMouseEnterAndExitAdapter(this));
 	}
 	
 	/**
@@ -48,6 +59,14 @@ public class UserInfoPanel extends JPanel{
 	public UserInfoPanel(UserInfo info, Rectangle pos) {
 		this(info);
 		setBounds(pos);
+	}
+	
+	public void addMouseListener(final AbstractAction action) {
+		addMouseListener(new MouseAdapter() {
+		    public void mouseClicked(MouseEvent e) {
+		    	action.actionPerformed(null);
+		    }
+		});
 	}
 	
 }

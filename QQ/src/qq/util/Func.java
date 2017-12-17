@@ -1,5 +1,9 @@
 package qq.util;
 
+import java.util.ArrayList;
+
+import javax.swing.JComponent;
+
 /**
  * 全局多次使用的函数
  */
@@ -51,6 +55,20 @@ public abstract class Func {
 		if(total < 0 || colNum <= 0)
 			return 0;
 		return (total + colNum - 1) / colNum;
+	}
+	
+	/**
+	 * 将某一个对撞转换成对象数组
+	 * @param comp 不能为null
+	 * @return
+	 */
+	public static  <T> ArrayList<T> toArrayList(final T object) {
+		if(object == null)
+			throw new IllegalArgumentException();
+		
+		ArrayList<T> objects = new ArrayList<T>();
+		objects.add(object);
+		return objects;
 	}
 	
 }

@@ -64,16 +64,7 @@ public class UserInfoDAO extends BaseDAO{
 	// TODO: 改变抛出异常
 	public static UserInfo getInfoByID(int userID) throws SQLException {
 		select(getInfoByIDToSql(userID));
-		UserInfo info = null;
-		if(resultSet.next()) {
-			int ID = resultSet.getInt("ID");
-			String name = resultSet.getString("name");
-			String sex = resultSet.getString("sex");
-			int age = resultSet.getInt("age");
-			String motto = resultSet.getString("motto");
-			int headIconIndex = resultSet.getInt("head_icon");
-			info = new UserInfo(ID, name, sex, age, motto, headIconIndex);
-		}
+		UserInfo info = nextInfo();
 		return info;
 	}
 	
@@ -96,6 +87,52 @@ public class UserInfoDAO extends BaseDAO{
 			userInfos.add(info);
 		}
 		return userInfos;
+	}
+	
+	public static String getInfoByNameToSql(String name) {
+		String sql = "SELECT ID,name,sex,age,motto,head_icon FROM " + getTableName() 
+				+ " WHERE name = " + '"' + name + '"' + ";";
+		return sql;
+	}
+	
+	public static ArrayList<UserInfo> getInfosByName(String name) throws SQLException {
+		select(getInfoByNameToSql(name));
+		ArrayList<UserInfo> infos = nextInfos();
+		return infos;
+	}
+	
+	/**
+	 * @return 从resultSet中提取出的第一个info， 没有返回null
+	 * @throws SQLException
+	 */
+	private static UserInfo nextInfo() throws SQLException {
+		ArrayList<UserInfo> infos = nextInfos();
+		if(infos.size() == 0){
+			return null;
+		} else {
+			return infos.get(0);
+		}
+	}
+	
+	/**
+	 * 从resultSet中提取出所有info，并设置resultSet为null
+	 * @return
+	 * @throws SQLException
+	 */
+	private static ArrayList<UserInfo> nextInfos() throws SQLException {
+		ArrayList<UserInfo> infos = new ArrayList<UserInfo>();
+		while (resultSet.next()) {
+			int ID = resultSet.getInt("ID");
+			String name = resultSet.getString("name");
+			String sex = resultSet.getString("sex");
+			int age = resultSet.getInt("age");
+			String motto = resultSet.getString("motto");
+			int headIconIndex = resultSet.getInt("head_icon");
+			UserInfo info = new UserInfo(ID, name, sex, age, motto, headIconIndex);
+			infos.add(info);
+		}
+		resultSet = null; // 防止其他地方提取
+		return infos;
 	}
 	
 }

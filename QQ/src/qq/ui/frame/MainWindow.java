@@ -202,8 +202,10 @@ public class MainWindow extends JFrame {
 				WINDOW_WIDTH, funcPaneHeight);
 		funcPane.setLayout(new FlowLayout(FlowLayout.LEFT, gapX, gapY)); // Flow布局
 		this.contentPane.add(funcPane);
-		
-		// TODO add actionListener
+		intitSearchButton(BUTTON_WIDTH, BUTTON_HEIGHT);
+	}	
+	
+	protected void intitSearchButton(int BUTTON_WIDTH, int BUTTON_HEIGHT) {
 		ImageIcon icon = ResourceManagement.getScaledIcon(
 				"search_icon.png", BUTTON_WIDTH, BUTTON_HEIGHT);
 		JButton searchButton = new JButton(icon);
@@ -214,11 +216,11 @@ public class MainWindow extends JFrame {
 		searchButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				AddFriendWindow.startUp();
 			}
 		});
 		funcPane.add(searchButton);
-	}	
+	}
 	
 	// ------------------------- 逻辑部分 ------------------------- //
 	

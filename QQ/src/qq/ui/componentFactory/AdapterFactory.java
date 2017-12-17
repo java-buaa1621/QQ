@@ -3,6 +3,8 @@ package qq.ui.componentFactory;
 import java.awt.Color;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -12,6 +14,7 @@ import javax.swing.JComponent;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import qq.ui.component.MyAction;
 import qq.util.Constant;
 import qq.util.ResourceManagement;
 
@@ -56,17 +59,18 @@ public final class AdapterFactory {
 	}
 	
 	/**
+	 * 鼠标进入背景变GRAY,出去变BLACK
 	 * @param component 要实现的控件
-	 * @param enterColor 鼠标进入颜色
-	 * @param exitColor 鼠标离开颜色
-	 * @return 实现进入变GRAY,出去变BLACK的MouseAdapter对象
+	 * @return ouseAdapter对象
 	 */
 	public static MouseAdapter createMouseEnterAndExitAdapter(
 			final JComponent component) {
+		
 		return createMouseEnterAndExitAdapter(component, Color.GRAY, Color.BLACK);
 	}
 	
 	/**
+	 * 鼠标进出时改变component背景颜色
 	 * @param component 要实现的控件
 	 * @param enterColor 鼠标进入颜色
 	 * @param exitColor 鼠标离开颜色
@@ -84,4 +88,31 @@ public final class AdapterFactory {
 			}
 		};
 	}
+	
+	/**
+	 * 当键盘keyValue按键按下时，执行action中的方法
+	 * @param keyValue
+	 * @param action
+	 * @return
+	 */
+	public static KeyAdapter createKeyTypedAdapter(final char keyValue, final MyAction action) {
+		if(action == null)
+			throw new IllegalArgumentException();
+		
+		return new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				if(e.getKeyChar() == keyValue) {
+					action.executeAction();
+				}
+			}
+		};
+	}
+	
+	public static KeyAdapter createKeyTypedAdapter(final int keyValue, final MyAction action) {
+		if(action == null)
+			throw new IllegalArgumentException();
+		
+		return createKeyTypedAdapter((char) keyValue, action);
+	}
+	
 }

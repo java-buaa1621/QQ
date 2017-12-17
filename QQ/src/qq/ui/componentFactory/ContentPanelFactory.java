@@ -1,4 +1,4 @@
-package qq.ui.component;
+package qq.ui.componentFactory;
 
 import java.awt.Graphics;
 import java.awt.Image;
