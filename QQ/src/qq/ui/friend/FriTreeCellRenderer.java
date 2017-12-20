@@ -6,13 +6,12 @@ import java.awt.Image;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.TreeCellRenderer;
 
 import qq.util.ResourceManagement;
 
-public class FriTreeCellRenderer implements TreeCellRenderer {
+public class FriTreeCellRenderer extends JLabel implements TreeCellRenderer {
 	
 	ImageIcon arrow_left;
 	ImageIcon arrow_down;
@@ -34,23 +33,21 @@ public class FriTreeCellRenderer implements TreeCellRenderer {
 		if (leaf && fri.getParent() != tree.getModel().getRoot()) { 
 			// 设置JLable的图片
             Image image = fri.getImageIcon().getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT);
-            setIcon(new ImageIcon(image));
-            setIconTextGap(0); // 设置JLable的图片与文字之间的距离	
+		    setIcon(new ImageIcon(image));
+		    setIconTextGap(0); // 设置JLable的图片与文字之间的距离	
 			// 设置JLable的文字
 			String text = "<html>" + fri.getUserName() + "<br/>" + fri.getUserMotto() + "</html>";
 			setText(text);
 		// 非叶子节点的文字为节点的nodeName
 		} else { 
-			JLabel midNode = new JLabel();
-			midNode.setText(fri.getNodeName()); // 设置JLable的文字
+			setText(fri.getNodeName()); // 设置JLable的文字
 			// 根据节点状态设置JLable的图片
-			if (expanded) {
-				midNode.setIcon(arrow_down);
-			} else {
-            	midNode.setIcon(arrow_left);				
-			}
-			return midNode;
+			if (expanded) 
+			    setIcon(arrow_down);
+            else
+            	setIcon(arrow_left);
 		}
+		return this;
 	}
 
 }
