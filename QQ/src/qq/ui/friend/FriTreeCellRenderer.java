@@ -6,12 +6,14 @@ import java.awt.Image;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.TreeCellRenderer;
 
+import qq.ui.component.UserInfoPanel;
 import qq.util.ResourceManagement;
 
-public class FriTreeCellRenderer extends JLabel implements TreeCellRenderer {
+public class FriTreeCellRenderer extends JPanel implements TreeCellRenderer {
 	
 	ImageIcon arrow_left;
 	ImageIcon arrow_down;
@@ -32,20 +34,25 @@ public class FriTreeCellRenderer extends JLabel implements TreeCellRenderer {
 		// 节点需要不为根节点，和根节点的孩子节点
 		if (leaf && fri.getParent() != tree.getModel().getRoot()) { 
 			// 设置JLable的图片
-            Image image = fri.getImageIcon().getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT);
-		    setIcon(new ImageIcon(image));
-		    setIconTextGap(0); // 设置JLable的图片与文字之间的距离	
+//          Image image = fri.getImageIcon().getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT);
+//		    setIcon(new ImageIcon(image));
+//		    setIconTextGap(0); // 设置JLable的图片与文字之间的距离	
 			// 设置JLable的文字
-			String text = "<html>" + fri.getUserName() + "<br/>" + fri.getUserMotto() + "</html>";
-			setText(text);
+//			String text = "<html>" + fri.getUserName() + "<br/>" + fri.getUserMotto() + "</html>";
+//			setText(text);
+			UserInfoPanel pane = new UserInfoPanel(fri.getUserInfo());
+			this.add(pane);
 		// 非叶子节点的文字为节点的nodeName
 		} else { 
-			setText(fri.getNodeName()); // 设置JLable的文字
+			JLabel midLabel = new JLabel();
+			midLabel.setText(fri.getNodeName()); // 设置JLable的文字
 			// 根据节点状态设置JLable的图片
-			if (expanded) 
-			    setIcon(arrow_down);
-            else
-            	setIcon(arrow_left);
+			if (expanded) {
+				midLabel.setIcon(arrow_down);
+			} else {
+				midLabel.setIcon(arrow_left);
+			}
+            this.add(midLabel);
 		}
 		return this;
 	}
