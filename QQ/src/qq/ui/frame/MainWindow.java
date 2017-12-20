@@ -15,9 +15,12 @@ import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.ScrollPaneLayout;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 
 import java.awt.FlowLayout;
 
@@ -26,6 +29,9 @@ import javax.swing.JButton;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -182,7 +188,6 @@ public class MainWindow extends JFrame {
 		tree.setCellRenderer(new FriTreeCellRenderer());
 		tree.setRootVisible(false); // 不显示根节点
 		tree.putClientProperty("JTree.lineStyle", "None"); // 不显示纵向连线
-		tree.setRowHeight(50);//树节点的高度
 		tree.setToggleClickCount(1); //设置展开节点之前的鼠标单击数为1
 		mainPane.add(tree);
 		
@@ -283,18 +288,38 @@ public class MainWindow extends JFrame {
 		UserInfo info2 = new UserInfo(2, "wangsaer", "女", 5, "hhhhhh", 16);
 		FriTreeNode zhangsan = new FriTreeNode(info1);
 		FriTreeNode wangsaer = new FriTreeNode(info2);
-		//node1.addChild(zhangsan);
-		//node2.addChild(wangsaer);
+		node1.addChild(zhangsan);
+		node2.addChild(wangsaer);
 
 		
 		// 创建树并加入jMode, renderer等组件
 		DefaultTreeModel jMode = new DefaultTreeModel(root);
-		JTree tree = new JTree(jMode);
+		final JTree tree = new JTree(jMode);
 		tree.setCellRenderer(new FriTreeCellRenderer());
 		tree.setRootVisible(false); // 不显示根节点
 		tree.putClientProperty("JTree.lineStyle", "None"); // 不显示纵向连线
-		tree.setRowHeight(50);//树节点的高度
 		tree.setToggleClickCount(1); //设置展开节点之前的鼠标单击数为1
+		
+		tree.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				FriTreeNode node = (FriTreeNode)tree.getLastSelectedPathComponent();
+				if(node.isThirdLayer()) {
+
+				}
+			}
+		});
+		/*
+		tree.addTreeSelectionListener(new TreeSelectionListener() {
+			@Override
+			public void valueChanged(TreeSelectionEvent evt) {
+				FriTreeNode node = (FriTreeNode)evt.getPath().getLastPathComponent();
+				if(node.isThirdLayer())
+					ResourceManagement.debug(node.getUserInfo());
+			}
+			
+		});
+		*/
+		
 		mainPane.add(tree);
 		// 加入JScrollPane
 		JScrollPane treeView = new JScrollPane(tree);

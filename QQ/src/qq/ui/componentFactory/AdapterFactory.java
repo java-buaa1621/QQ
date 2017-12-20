@@ -66,8 +66,11 @@ public final class AdapterFactory {
 	 */
 	public static MouseAdapter createMouseEnterAndExitAdapter(
 			final JComponent component) {
-		
-		return createMouseEnterAndExitAdapter(component, Color.GRAY, Color.BLACK);
+		if(component instanceof JPanel) { // panel部件
+			return createMouseEnterAndExitAdapter(component, Color.LIGHT_GRAY, Color.WHITE);
+		} else { // 文字部件
+			return createMouseEnterAndExitAdapter(component, Color.GRAY, Color.BLACK);
+		}
 	}
 	
 	/**
@@ -125,5 +128,7 @@ public final class AdapterFactory {
 		
 		return createKeyTypedAdapter((char) keyValue, action);
 	}
+	
+	
 	
 }

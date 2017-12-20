@@ -223,7 +223,7 @@ public class AddFriendWindow extends JFrame {
 		showPane.removeAll();
 		for(UserInfo info : userInfos){
 			UserInfoPanel infoPane = new UserInfoPanel(info);
-			infoPane.setBorder(BorderFactory.createLineBorder(Color.black));
+			//TODO add border  infoPane.setBorder(BorderFactory.createLineBorder(Color.BLACK)); 
 			showPane.addComp(infoPane);
 		}
 		showPane.updateUI();

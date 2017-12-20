@@ -1,10 +1,15 @@
 package qq.ui.friend;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
@@ -13,7 +18,7 @@ import javax.swing.tree.TreeCellRenderer;
 import qq.ui.component.UserInfoPanel;
 import qq.util.ResourceManagement;
 
-public class FriTreeCellRenderer extends JPanel implements TreeCellRenderer {
+public class FriTreeCellRenderer implements TreeCellRenderer {
 	
 	ImageIcon arrow_left;
 	ImageIcon arrow_down;
@@ -33,28 +38,29 @@ public class FriTreeCellRenderer extends JPanel implements TreeCellRenderer {
 		FriTreeNode fri = (FriTreeNode) value;
 		// 节点需要不为根节点，和根节点的孩子节点
 		if (leaf && fri.getParent() != tree.getModel().getRoot()) { 
-			// 设置JLable的图片
-//          Image image = fri.getImageIcon().getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT);
-//		    setIcon(new ImageIcon(image));
-//		    setIconTextGap(0); // 设置JLable的图片与文字之间的距离	
-			// 设置JLable的文字
-//			String text = "<html>" + fri.getUserName() + "<br/>" + fri.getUserMotto() + "</html>";
-//			setText(text);
 			UserInfoPanel pane = new UserInfoPanel(fri.getUserInfo());
-			this.add(pane);
+			pane.setPreferredSize(UserInfoPanel.minPanelSize);
+			pane.setFocusColor();
+			return pane;
 		// 非叶子节点的文字为节点的nodeName
 		} else { 
 			JLabel midLabel = new JLabel();
 			midLabel.setText(fri.getNodeName()); // 设置JLable的文字
+			midLabel.setPreferredSize(new Dimension(200,50));
 			// 根据节点状态设置JLable的图片
 			if (expanded) {
 				midLabel.setIcon(arrow_down);
 			} else {
 				midLabel.setIcon(arrow_left);
 			}
-            this.add(midLabel);
+			midLabel.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					ResourceManagement.debug(123);
+				}
+			});
+			return midLabel;
 		}
-		return this;
 	}
 
 }

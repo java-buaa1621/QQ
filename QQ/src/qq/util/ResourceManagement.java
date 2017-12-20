@@ -38,6 +38,9 @@ public abstract class ResourceManagement {
 	public static void debug(int info) {
 		System.out.println(info);
 	}
+	public static void debug(double info) {
+		System.out.println(info);
+	}
 	public static void debug(UserInfo info) {
 		System.out.println(info.getID());
 		System.out.println(info.getName());

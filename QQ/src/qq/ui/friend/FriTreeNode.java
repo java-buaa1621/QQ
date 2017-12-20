@@ -100,6 +100,25 @@ public class FriTreeNode implements TreeNode{
 		return (!isRoot && noChild);
 	}
 
+	public boolean isThirdLayer() {
+		int layer = getLayer();
+		if(layer == 3) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public int getLayer() {
+		FriTreeNode node = this;
+		int layer = 1;
+		while (node.getParent() != null) {
+			node = (FriTreeNode) node.getParent();
+			layer++;
+		}
+		return layer;
+	}
+	
 	@Override
 	public Enumeration children() {
 		return null;

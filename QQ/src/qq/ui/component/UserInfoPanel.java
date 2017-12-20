@@ -41,11 +41,11 @@ public class UserInfoPanel extends JPanel{
 		add(imageLabel);
 		
 		JLabel userNameLabel = new JLabel(userName);
-		userNameLabel.setBounds(96, 10, 48, 15);
+		userNameLabel.setBounds(96, 10, 200, 15);
 		add(userNameLabel);
 		
 		JLabel userMottoLabel = new JLabel(userMotto);
-		userMottoLabel.setBounds(96, 55, 180, 15);
+		userMottoLabel.setBounds(96, 55, 200, 15);
 		add(userMottoLabel);
 		
 	}
@@ -66,6 +66,14 @@ public class UserInfoPanel extends JPanel{
 		    	action.actionPerformed(null);
 		    }
 		});
+	}
+	
+	/**
+	 * Êó±ê¾Û½¹±ä»»ÑÕÉ«
+	 */
+	public void setFocusColor() {
+		addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(this));
 	}
 	
 	/**
