@@ -34,7 +34,7 @@ public class ButtonFactory {
 	}
 	
 	/**
-	 * 创建JRadioButton数组并初始化
+	 * 创建一个加入panel及ButtonGroup的JRadioButton数组
 	 * @param num 
 	 * @param contents 
 	 * @param positions
@@ -56,6 +56,5 @@ public class ButtonFactory {
 		}
 		return jRadioButtons;
 	}
-	
 	
 }

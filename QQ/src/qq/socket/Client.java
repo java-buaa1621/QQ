@@ -15,9 +15,9 @@ public class Client {
 	
 	public static void main(String args[]) {
 		try {
-			chatWindow = new ChatRoom();	
+			chatWindow = ChatRoom.createWindow();	
 			chatWindow.setVisible(true);
-			Socket s1 = new Socket("127.0.0.1", 9090);
+			Socket s1 = new Socket("127.0.0.1", 9091);
 			InputStream is = s1.getInputStream();
 			DataInputStream dis = new DataInputStream(is);
 			OutputStream os = s1.getOutputStream();
@@ -32,5 +32,6 @@ public class Client {
 			e.printStackTrace();
 		}
 	}
+	
 }
 

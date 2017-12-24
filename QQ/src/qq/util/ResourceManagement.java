@@ -1,5 +1,6 @@
 package qq.util;
 
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
 
@@ -26,11 +27,19 @@ public abstract class ResourceManagement {
 		return icon;
 	}
 	
+	public static ImageIcon getScaledIcon(String path, Dimension iconSize) {
+		return getScaledIcon(path, iconSize.width, iconSize.height);
+	}
+	
 	public static ImageIcon getScaledIcon(String path, int width, int height) {
 		Image img = getImage(path);
 		img = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 		return new ImageIcon(img);
 	}
+	
+	
+	
+	
 	
 	public static void debug(String info) {
 		System.out.println(info);

@@ -302,19 +302,23 @@ public class MainWindow extends JFrame {
 		
 		tree.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				FriTreeNode node = (FriTreeNode)tree.getLastSelectedPathComponent();
-				if(node.isThirdLayer()) {
-
+				// Ë«»÷ÊÂ¼þ
+				if(e.getClickCount() == 2) {
+					FriTreeNode node = (FriTreeNode)tree.getLastSelectedPathComponent();
+					if(node.isThirdLayer()) {
+						UserInfo info = node.getUserInfo();
+						info.getID();
+					}
 				}
 			}
 		});
 		/*
 		tree.addTreeSelectionListener(new TreeSelectionListener() {
-			@Override
 			public void valueChanged(TreeSelectionEvent evt) {
 				FriTreeNode node = (FriTreeNode)evt.getPath().getLastPathComponent();
-				if(node.isThirdLayer())
-					ResourceManagement.debug(node.getUserInfo());
+				if(node.isThirdLayer()) {
+					node.getPanel().setBackground(Color.WHITE);
+				}
 			}
 			
 		});

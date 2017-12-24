@@ -42,45 +42,86 @@ public abstract class PanelFactory {
 		return contentPane;
 	}
 	
-	/*
-	public static JScrollPane createFlowComponentPane(
-			Rectangle panelPos, ArrayList<JComponent> components, int gapX, int gapY, 
-			int colNum, int compBorderWidth) {
-		
-		JPanel innerPane = new JPanel(); // 初始化HeadIconPane
-		innerPane.setLayout(new FlowLayout(FlowLayout.LEFT, gapX, gapY));
-		for(JComponent component : components) { // 设置component并添加入innerPane
-			component.setBorder(new EmptyBorder(compBorderWidth, compBorderWidth, compBorderWidth, compBorderWidth));
-			innerPane.add(component);
-		}
-		
-		// 设置在scrollPane里面的相对位置
-		int colWidth = compBorderWidth + gapX + compWidth; 
-		int rowNum = Func.getRowNum(components.size(), colNum);
-		int rowHeight = compBorderWidth + gapY + compHeight;
-		innerPane.setPreferredSize(
-				new Dimension(colNum * colWidth + 10, rowNum * rowHeight + 10)); // 加10防止最后一行紧挨底
-		
-		JScrollPane outerPane = new JScrollPane(innerPane);
-		outerPane.setBounds(panelPos);
-		return outerPane;
-	}*/
+//  以下代码块用于debugs
+//	editPane = new JPanel();
+//	editPane.setBounds(0, 360, 456, 25);
+//	editPane.setLayout(new FlowLayout(0, 5, FlowLayout.LEFT));
+//	contentPane.add(editPane);
+//	
+//	// 设置emojiButton
+//	Dimension iconSize = new Dimension(18, 18);
+//	Dimension compSize = new Dimension(22, 22);
+//	emojiButton = new JButton(
+//			ResourceManagement.getScaledIcon("emoticon.png", iconSize));
+//	emojiButton.setBorder(new EmptyBorder(4, 0, 0, 0));
+//	emojiButton.setPreferredSize(compSize);
+//	editPane.add(emojiButton);
 	
 	/**
-	 * 创建内部内容采取流动布局jScrollPane
-	 * @param T
+	 * 简化版createFlowComponentScrollPane
+	 * 创建内部内容采取流动布局jScrollPanel
+	 * @param panelPos
+	 * @param components
+	 * @param colNum
+	 * @param compSize
+	 * @return
 	 */
 	public static <T extends JComponent> FlowComponentScrollPanel<T> createFlowComponentScrollPane(
 			Rectangle panelPos, ArrayList<T> components, int colNum, Dimension compSize) {
+		
 		return new FlowComponentScrollPanel<T>(panelPos, components, colNum, compSize);
 	}
 	
+	/**
+	 * 
+	 * @param panelPos
+	 * @param comp
+	 * @param colNum
+	 * @param compSize
+	 * @return
+	 */
+	public static <T extends JComponent> FlowComponentScrollPanel<T> createFlowComponentScrollPane(
+			Rectangle panelPos, T comp, int colNum, Dimension compSize) {
+		
+		return new FlowComponentScrollPanel<T>(panelPos, Func.toArrayList(comp), colNum, compSize);
+	}
+	
+	/**
+	 * 完全版createFlowComponentScrollPane
+	 * @param panelPos
+	 * @param components
+	 * @param gapX
+	 * @param gapY
+	 * @param colNum
+	 * @param compSize
+	 * @param compBorderWidth
+	 * @return
+	 */
 	public static <T extends JComponent> FlowComponentScrollPanel<T> createFlowComponentScrollPane(
 			Rectangle panelPos, ArrayList<T> components, 
 			int gapX, int gapY, int colNum, Dimension compSize, int compBorderWidth) {
 		
 		return new FlowComponentScrollPanel<T>(
 				panelPos, components, gapX, gapY, colNum, compSize, compBorderWidth);
+	}
+	
+	/**
+	 * 
+	 * @param panelPos
+	 * @param comp
+	 * @param gapX
+	 * @param gapY
+	 * @param colNum
+	 * @param compSize
+	 * @param compBorderWidth
+	 * @return
+	 */
+	public static <T extends JComponent> FlowComponentScrollPanel<T> createFlowComponentScrollPane(
+			Rectangle panelPos, T comp, 
+			int gapX, int gapY, int colNum, Dimension compSize, int compBorderWidth) {
+		
+		return new FlowComponentScrollPanel<T>(
+				panelPos, Func.toArrayList(comp), gapX, gapY, colNum, compSize, compBorderWidth);
 	}
 	
 }

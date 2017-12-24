@@ -38,10 +38,11 @@ public class FriTreeCellRenderer implements TreeCellRenderer {
 		FriTreeNode fri = (FriTreeNode) value;
 		// 节点需要不为根节点，和根节点的孩子节点
 		if (leaf && fri.getParent() != tree.getModel().getRoot()) { 
-			UserInfoPanel pane = new UserInfoPanel(fri.getUserInfo());
-			pane.setPreferredSize(UserInfoPanel.minPanelSize);
-			pane.setFocusColor();
-			return pane;
+			UserInfoPanel panel = new UserInfoPanel(fri.getUserInfo());
+			panel.setPreferredSize(UserInfoPanel.minPanelSize);
+			
+			fri.setPanel(panel);
+			return panel;
 		// 非叶子节点的文字为节点的nodeName
 		} else { 
 			JLabel midLabel = new JLabel();

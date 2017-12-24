@@ -5,9 +5,12 @@ import java.util.Enumeration;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.tree.TreeNode;
 
 import qq.db.info.UserInfo;
+import qq.ui.component.UserInfoPanel;
 import qq.util.ResourceManagement;
 
 public class FriTreeNode implements TreeNode{
@@ -16,6 +19,7 @@ public class FriTreeNode implements TreeNode{
 	protected String nodeName;
 	protected TreeNode parent;
 	protected ArrayList<TreeNode> children;
+	protected UserInfoPanel panel;
 	
 	/**
 	 * 用于创建根节点
@@ -130,6 +134,14 @@ public class FriTreeNode implements TreeNode{
 	
 	public UserInfo getUserInfo() {
 		return this.info;
+	}
+	
+	public void setPanel(UserInfoPanel panel) {
+		this.panel = panel;
+	}
+	
+	public UserInfoPanel getPanel() {
+		return panel;
 	}
 	
 }

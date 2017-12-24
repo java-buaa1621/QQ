@@ -69,7 +69,7 @@ public class FlowComponentScrollPanel<T extends JComponent> extends JScrollPane 
 		this.setBounds(scrollPanelPos);
 		this.setHorizontalScrollBarPolicy(
         		JScrollPane.HORIZONTAL_SCROLLBAR_NEVER); // 禁止出现横向滚动条
-		
+
 		this.addComps(components);
 	}
 	
@@ -171,6 +171,14 @@ public class FlowComponentScrollPanel<T extends JComponent> extends JScrollPane 
 //			ResourceManagement.debug(y);
 			innerPane.setPreferredSize(new Dimension(x, y)); // 加10防止最后一行紧挨底
 		}
+	}
+	
+	/**
+	 * 禁止出现纵向滚动条
+	 */
+	public void banVerticalScroll() {
+		this.setVerticalScrollBarPolicy(
+        		JScrollPane.VERTICAL_SCROLLBAR_NEVER); 
 	}
 	
 }
