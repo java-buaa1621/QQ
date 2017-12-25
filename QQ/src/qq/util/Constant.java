@@ -14,4 +14,5 @@ public class Constant {
 	public static final char pwFieldPlainTextChar = (char)0; // Ã÷ÎÄ
 	
 	public static final Dimension userInfoPanelSize = new Dimension(180, 70);
+	public static final Dimension qqShowSize = new Dimension(140, 480);
 }

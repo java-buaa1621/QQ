@@ -58,6 +58,23 @@ public abstract class PanelFactory {
 //	editPane.add(emojiButton);
 	
 	/**
+	 * 
+	 * @param comp
+	 * @param gapX
+	 * @param gapY
+	 * @param colNum
+	 * @param compSize
+	 * @param compBorderWidth
+	 * @return
+	 */
+	public static <T extends JComponent> FlowComponentScrollPanel<T> createFlowComponentScrollPane(
+			ArrayList<T> comps, int gapX, int gapY, int colNum, Dimension compSize, int compBorderWidth) {
+		
+		return new FlowComponentScrollPanel<T>(
+				comps, gapX, gapY, colNum, compSize, compBorderWidth);
+	}
+	
+	/**
 	 * 简化版createFlowComponentScrollPane
 	 * 创建内部内容采取流动布局jScrollPanel
 	 * @param panelPos
@@ -88,7 +105,7 @@ public abstract class PanelFactory {
 	
 	/**
 	 * 完全版createFlowComponentScrollPane
-	 * @param panelPos
+	 * @param panelPos 
 	 * @param components
 	 * @param gapX
 	 * @param gapY
