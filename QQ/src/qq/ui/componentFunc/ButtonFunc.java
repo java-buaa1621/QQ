@@ -93,6 +93,15 @@ public class ButtonFunc {
 		button.setContentAreaFilled(isOpaque);
 	}
 	
+	public static void buildGroup(ArrayList<? extends AbstractButton> buttons, ButtonGroup bGroup) {
+		if(buttons == null || bGroup == null)
+			throw new IllegalArgumentException();
+		
+		for(AbstractButton button : buttons) {
+			bGroup.add(button);
+		}
+	}
+	
 	public static void setIsSelected(ArrayList<JRadioButton> rButtons, int index) {
 		if(rButtons.size() <= index || index < 0)
 			throw new IllegalArgumentException();

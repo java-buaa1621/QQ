@@ -27,6 +27,11 @@ public abstract class ResourceManagement {
 		return icon;
 	}
 	
+	public static ImageIcon getFaceIcon(int faceiconIndex) {
+		ImageIcon icon = new ImageIcon("resource/image/face/" + faceiconIndex + ".gif");
+		return icon;
+	}
+	
 	public static ImageIcon getScaledIcon(String path, Dimension iconSize) {
 		return getScaledIcon(path, iconSize.width, iconSize.height);
 	}

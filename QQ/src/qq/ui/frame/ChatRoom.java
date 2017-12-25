@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Rectangle;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -16,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -25,6 +28,7 @@ import qq.ui.component.UserInfoPanel;
 import qq.ui.componentFactory.ButtonFactory;
 import qq.ui.componentFactory.PanelFactory;
 import qq.ui.componentFunc.ButtonFunc;
+import qq.util.Constant;
 import qq.util.ResourceManagement;
 
 import java.awt.Color;
@@ -44,19 +48,22 @@ import qq.socket.*;
 public class ChatRoom extends JFrame {
 
 	// 与JFrame对象对联的线程
-	private SocketWriterThread writerThread;
-	private SocketReaderThread readerThread;
+	private SocketWriterThread writerThread = null;
+	private SocketReaderThread readerThread = null;
 	// 图形组件
-	private JPanel contentPane;
-	private UserInfoPanel headPane;
+	private FlowComponentScrollPanel<JButton> facePane = null;
+	private JPanel contentPane = null;
+	private UserInfoPanel headPane = null;
 	// 用户输入区域
 	/** 只能有一个同时被选取 */
-	private FlowComponentScrollPanel<JRadioButton> editPane;
-	private JPanel inputPanel;
-	private JTextArea inputArea;
+	private Box editBox = null;
+	private ButtonGroup editGroup = null;
+	private FlowComponentScrollPanel<JRadioButton> editPane = null;
+	private JPanel inputPanel = null;
+	private JTextArea inputArea = null;
 	// 历史消息展示区
-	private JPanel historyPane;
-	private JTextArea historyArea;
+	private JPanel historyPane = null;
+	private JTextArea historyArea = null;
 
 	
 	public static void main(String[] args) {
@@ -118,31 +125,34 @@ public class ChatRoom extends JFrame {
 	}
 	
 	protected void initEditPanel() {
-
+		// 创建facePanel
+		initFacePanel();
+		
+		editBox =  Box.createHorizontalBox();
 		Dimension iconSize = new Dimension(18, 18);
-		ButtonGroup bGroup = new ButtonGroup();
+		editGroup = new ButtonGroup();
 		
-		ImageIcon[] icons = {
-			ResourceManagement.getScaledIcon("emoticon.png", iconSize),
-			ResourceManagement.getScaledIcon("emoticon.png", iconSize),
-			ResourceManagement.getScaledIcon("emoticon.png", iconSize),
-		};
+		// 初始化radioButtons的各个部分
+		ArrayList<JRadioButton> rButtons = new ArrayList<JRadioButton>();
 		
-		ActionListener[] listeners = {
-			new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-//					PanelFactory.createFlowComponentScrollPane(
-//						panelPos, components, colNum, compSize);
-				}
-			},
-			new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					
+		final JRadioButton emojiButton = new JRadioButton(
+				ResourceManagement.getScaledIcon("emoticon.png", iconSize));
+		emojiButton.setToolTipText("表情");
+		emojiButton.addActionListener(new ActionListener() {			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (emojiButton.isSelected()) {
+					contentPane.add(facePane); // 显示facePane
+					contentPane.remove(historyPane); // 两者不能共存
+					facePane.updateUI();
+				} else {
+					contentPane.remove(facePane); // 不显示facePane
+					contentPane.add(historyPane); // 两者不能共存
+					contentPane.updateUI();
 				}
 			}
-		};
+		});
+		rButtons.add(emojiButton);
 
 		Rectangle panelPos = new Rectangle(0, 360, 456, 25);
 		int gapX = 5;
@@ -150,26 +160,40 @@ public class ChatRoom extends JFrame {
 		int colNum = 10;
 		Dimension compSize = new Dimension(22, 22);
 		int compBrderWidth = 0;
-//		editPane = PanelFactory.createFlowComponentScrollPane(
-//				panelPos, emojiButton, gapX, gapY, colNum, compSize, compBrderWidth);
+		editPane = PanelFactory.createFlowComponentScrollPane(
+				panelPos, rButtons, gapX, gapY, colNum, compSize, compBrderWidth);
 		editPane.banVerticalScroll();
 		
 		contentPane.add(editPane);
-		// TODO:finish
+	}
+	
+	protected void initFacePanel() {
+		Rectangle panelPos = new Rectangle(0, 124, 393, 237);
+		int gapX = 1; 
+		int gapY = 1;
+		int colNum = 8;
+		Dimension compSize = new Dimension(32, 32);
+		int compBorderWidth = 4;
 		
-//		editPane = new JPanel();
-//		editPane.setBounds(0, 360, 456, 25);
-//		editPane.setLayout(new FlowLayout(0, 5, FlowLayout.LEFT));
-//		contentPane.add(editPane);
-//		
-//		// 设置emojiButton
-//		Dimension iconSize = new Dimension(18, 18);
-//		Dimension compSize = new Dimension(22, 22);
-//		emojiButton = new JButton(
-//				ResourceManagement.getScaledIcon("emoticon.png", iconSize));
-//		emojiButton.setBorder(new EmptyBorder(4, 0, 0, 0));
-//		emojiButton.setPreferredSize(compSize);
-//		editPane.add(emojiButton);
+		// 文件读取创建图片
+		ArrayList<JButton> rButtons = new ArrayList<JButton>();
+		Dimension iconSize = new Dimension(24, 24);
+		for(int i = 0; i <= Constant.MAX_FACE_ICON; i++) {
+			final JButton faceButton = new JButton(
+					ResourceManagement.getFaceIcon(i));
+			faceButton.setName("[" + i + "]");
+			faceButton.setBackground(Color.WHITE);
+			faceButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					inputArea.append(faceButton.getName());
+				}
+			});
+			rButtons.add(faceButton);
+		}
+		
+		facePane = PanelFactory.createFlowComponentScrollPane(
+				panelPos, rButtons, gapX, gapY, colNum, compSize, compBorderWidth);
 	}
 	
 	protected void initInputPanel(){
@@ -204,8 +228,8 @@ public class ChatRoom extends JFrame {
 		historyPane = new JPanel();
 		historyPane.setBackground(Color.WHITE);
 		historyPane.setBounds(0, 91, 456, 270);
-		contentPane.add(historyPane);
 		historyPane.setLayout(null);
+		contentPane.add(historyPane);
 		
 		historyArea = new JTextArea();
 		historyArea.setBackground(Color.LIGHT_GRAY);
