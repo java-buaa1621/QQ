@@ -44,6 +44,39 @@ public class FlowComponentScrollPanel<T extends JComponent> extends JScrollPane 
 	
 	/**
 	 * 创建内部内容采取流动布局jPanel
+	 * @param components 组件(需要保持一致性宽高)
+	 * @param gapX 横向间距(防止紧贴外层panel)
+	 * @param gapY 纵向间距(防止紧贴外层panel)
+	 * @param colNum 内部组件列数
+	 * @param compSize 组件本体大小，不含边界,例如headIcon = (40,40)
+	 * @param compBorderWidth 组件设置的边框宽度(增大点击面积)
+	 */
+	public FlowComponentScrollPanel(
+			ArrayList<T> components, int gapX, int gapY, 
+			int colNum, Dimension compSize, int compBorderWidth) {
+		if(components == null || compSize == null)
+			throw new IllegalArgumentException();
+		if(gapX < 0 || gapY < 0 || colNum <= 0 || compBorderWidth < 0)
+			throw new IllegalArgumentException();
+		// 设置属性
+		this.gapX = gapX;
+		this.gapY = gapY;
+		this.colNum = colNum;
+		this.compSize = compSize;
+		this.compBorderWidth = compBorderWidth;
+		// 初始化HeadIconPane
+		innerPane = new JPanel(); 
+		innerPane.setLayout(new FlowLayout(FlowLayout.LEFT, gapX, gapY));
+		// 初始化JScrollPane
+		this.setViewportView(innerPane);
+		this.setHorizontalScrollBarPolicy(
+        		JScrollPane.HORIZONTAL_SCROLLBAR_NEVER); // 禁止出现横向滚动条
+
+		this.addComps(components);
+	}
+	
+	/**
+	 * 创建内部内容采取流动布局jPanel
 	 * @param scrollPanelPos 整体的大小(不变)
 	 * @param components 组件(需要保持一致性宽高)
 	 * @param gapX 横向间距(防止紧贴外层panel)

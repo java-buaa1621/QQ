@@ -38,7 +38,7 @@ public abstract class ResourceManagement {
 	
 	public static ImageIcon getScaledIcon(String path, int width, int height) {
 		Image img = getImage(path);
-		img = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+		img = img.getScaledInstance(width, height, Image.SCALE_DEFAULT);
 		return new ImageIcon(img);
 	}
 	
