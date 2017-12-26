@@ -9,6 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.management.InstanceAlreadyExistsException;
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -66,7 +67,7 @@ public final class AdapterFactory {
 	 */
 	public static MouseAdapter createMouseEnterAndExitAdapter(
 			final JComponent component) {
-		if(component instanceof JPanel) { // panel部件
+		if(component instanceof JPanel || component instanceof AbstractButton) { // panel部件
 			return createMouseEnterAndExitAdapter(component, Color.LIGHT_GRAY, Color.WHITE);
 		} else { // 文字部件
 			return createMouseEnterAndExitAdapter(component, Color.GRAY, Color.BLACK);
@@ -82,7 +83,7 @@ public final class AdapterFactory {
 	 */
 	public static MouseAdapter createMouseEnterAndExitAdapter(
 			final JComponent component, final Color enterColor, final Color exitColor) {
-		if(component instanceof JPanel) {
+		if(component instanceof JPanel || component instanceof AbstractButton) {
 			return new MouseAdapter() {
 				public void mouseEntered(MouseEvent e) {
 					component.setBackground(enterColor);

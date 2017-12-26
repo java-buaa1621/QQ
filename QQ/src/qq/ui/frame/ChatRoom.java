@@ -1,18 +1,23 @@
 package qq.ui.frame;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,6 +32,7 @@ import javax.swing.GroupLayout.Alignment;
 
 import qq.ui.component.FlowComponentScrollPanel;
 import qq.ui.component.UserInfoPanel;
+import qq.ui.componentFactory.AdapterFactory;
 import qq.ui.componentFactory.ButtonFactory;
 import qq.ui.componentFactory.PanelFactory;
 import qq.ui.componentFunc.ButtonFunc;
@@ -39,6 +45,19 @@ import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
+import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -49,6 +68,7 @@ import qq.socket.*;
 
 public class ChatRoom extends JFrame {
 
+	private final ChatRoom thisRoom;
 	// 与JFrame对象对联的线程
 	private SocketWriterThread writerThread = null;
 	private SocketReaderThread readerThread = null;
@@ -64,17 +84,17 @@ public class ChatRoom extends JFrame {
 	// 历史消息展示区
 	private JPanel historyPane = null;
 	private JTextArea historyArea = null;
-	private final Dimension historySize = new Dimension(450, 300);
+	private final Dimension historySize = new Dimension(450, 400);
 	// 用户编辑区
-	private JPanel editPanel = null;
-	private ButtonGroup editGroup = null;
-	private final Dimension iconSize = new Dimension(18, 18);
+	private Box editBox = null;
+	private final Dimension editIconSize = new Dimension(18, 18);
+	private JRadioButton emojiButton = null;
+	private JRadioButton pictureButton = null;
 	// 用户输入区
 	private Box inputBox = null;
 	private JTextArea inputArea = null;
 	private JButton sendButton = null;
-	// emojiPane
-	private FlowComponentScrollPanel<JButton> emojiPane = null;
+	private Dimension inputSize = new Dimension(450, 150);
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -100,6 +120,8 @@ public class ChatRoom extends JFrame {
 	
 	// TODO:用工厂实现，网络Socket需要获得ChatRoom实例
 	public ChatRoom(UserInfo info) {
+		thisRoom = this;
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 600, 550);
 		setResizable(false);
@@ -134,97 +156,132 @@ public class ChatRoom extends JFrame {
 	}
 	
 	protected void initEditPanel() {
-		// 创建facePanel
-		initEmojiPanel();
+		// 初始化editBox
+		editBox = Box.createHorizontalBox();
 		
+		initEmojiButton();
+		editBox.add(emojiButton);
+		initPictureButton();
+		editBox.add(pictureButton);
 		
-		
-		// emojiButton
-		final JRadioButton emojiButton = new JRadioButton(
-				ResourceManagement.getScaledIcon("emoticon.png", iconSize));
-		emojiButton.setToolTipText("表情");
-		emojiButton.addActionListener(new ActionListener() {			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (emojiButton.isSelected()) {
-					getContentPane().add(emojiPane); // 显示facePane
-					getContentPane().remove(historyPane); // 两者不能共存
-					emojiPane.updateUI();
-				} else {
-					getContentPane().remove(emojiPane); // 不显示facePane
-					getContentPane().add(historyPane); // 两者不能共存
-					((JComponent) getContentPane()).updateUI();
-				}
-			}
-		});		
 		// TODO:
-		
+		editBox.add(Box.createHorizontalGlue()); // 填充占位
 	}
 	
-	protected void initEmojiPanel() {
-		int gapX = 1; 
-		int gapY = 1;
-		int colNum = 8;
-		Dimension compSize = new Dimension(32, 32);
-		int compBorderWidth = 4;
+	protected void initEmojiButton(){
+		emojiButton = new JRadioButton(
+				ResourceManagement.getScaledIcon("emoticon.png", editIconSize));
+		emojiButton.setToolTipText("表情");
 		
-		// 文件读取创建图片
-		ArrayList<JButton> rButtons = new ArrayList<JButton>();
-		//Dimension iconSize = new Dimension(24, 24);
-		for(int i = 0; i <= Constant.MAX_FACE_ICON; i++) {
-			final JButton faceButton = new JButton(
-					ResourceManagement.getFaceIcon(i));
-			faceButton.setName("[" + i + "]");
-			faceButton.setBackground(Color.WHITE);
-			faceButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					inputArea.append(faceButton.getName());
+		emojiButton.addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(emojiButton));
+		emojiButton.addActionListener(new ActionListener() {	
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!EmojiDialog.haveDialog()) {
+					EmojiDialog dialog = EmojiDialog.getInstance(thisRoom);
+					Point pos = emojiButton.getLocationOnScreen();
+					int width = EmojiDialog.size.width;
+					int height = EmojiDialog.size.height;
+					dialog.setBounds((int)pos.getX(), (int)pos.getY() - height, width, height);
+				} else {
+					EmojiDialog.close();
 				}
-			});
-			rButtons.add(faceButton);
-		}
+			}
+		});
+		//防止表情一直显示---------------------------
+		this.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				EmojiDialog.close();
+			}
+		});
+		this.addWindowStateListener(new WindowStateListener() {
+			@Override
+			public void windowStateChanged(WindowEvent e) {
+				EmojiDialog.close();				
+			}
+		});
+		//---------------------------
+		emojiButton.addFocusListener(new FocusAdapter() {
+			// TODO:完善
+			@Override
+			public void focusLost(FocusEvent e) {
+				if(!(e.getOppositeComponent() instanceof EmojiDialog))
+					EmojiDialog.close();
+				// ResourceManagement.debug(e.getOppositeComponent().getClass().getName());
+			}
+		});
+	}
+	
+	protected void initPictureButton(){
+		pictureButton = new JRadioButton(
+				ResourceManagement.getScaledIcon("picture.png", editIconSize));
+		pictureButton.setToolTipText("图片");
 		
-		emojiPane = PanelFactory.createFlowComponentScrollPane(
-				rButtons, gapX, gapY, colNum, compSize, compBorderWidth);
+		pictureButton.addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(pictureButton));
+		pictureButton.addActionListener(new ActionListener() { // 插入图片事件
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser f = new JFileChooser(); // 查找文件
+				f.showOpenDialog(null);
+				File picture = f.getSelectedFile(); // TODO 检测后缀名
+				if(picture != null) {
+					insertPicture(picture); // 插入图片					
+				}
+			}
+		});
 	}
 	
 	protected void initInputPanel(){
-		inputBox = Box.createHorizontalBox();
+		inputBox = Box.createVerticalBox();
 		
-		//inputPanel.setBounds(0, 385, 456, 116);
-		// 输入文本区域
-		// TODO 使用textPane取代textArea
+		// 输入文本区域 TODO 使用textPane取代textArea
 		inputArea = new JTextArea();
 		inputArea.setLineWrap(true);
 		inputArea.setWrapStyleWord(true);
 		// 滚动面板
         JScrollPane textScrollPane = new JScrollPane(inputArea);
-        //textScrollPane.setBounds(0,0, 456,94);
+        textScrollPane.setPreferredSize(inputSize);
         textScrollPane.setHorizontalScrollBarPolicy(
         		JScrollPane.HORIZONTAL_SCROLLBAR_NEVER); // 永不出现横向滚动条
+        textScrollPane.setVerticalScrollBarPolicy(
+        		JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); // 视情况出现纵向滚动条
         inputBox.add(textScrollPane);
-        
-		//sendButton.setBounds(363, 93, 93, 23);
+        // 添加sendButton
+        Box sendBox = Box.createHorizontalBox();
 		sendButton = new JButton("发送");
 		sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dealMessage();
 			}
 		});
-		inputBox.add(sendButton);
+		sendBox.add(Box.createHorizontalGlue()); // 占位条
+		sendBox.add(sendButton);
+		inputBox.add(sendBox);
 	}
 	
 	protected void initHistoryPanel(){
 		historyPane = new JPanel();
 		historyPane.setBackground(Color.WHITE);
-		//historyPane.setBounds(0, 91, 456, 270);
 		
 		historyArea = new JTextArea();
 		historyArea.setBackground(Color.LIGHT_GRAY);
 		historyArea.setPreferredSize(historySize);
 		historyArea.setEditable(false);
 		historyPane.add(historyArea);
+	}
+	
+	
+	
+	// ------------------------------------- 逻辑部分 ------------------------------- //
+	
+	public void insertText(String text) {
+		inputArea.append(text);
+	}
+	
+	public void insertPicture(File picture) {
+		// TODO
 	}
 	
 	public void displayMessage(String text) {
@@ -239,12 +296,12 @@ public class ChatRoom extends JFrame {
 	private void dealMessage() {
 		// 获取文本信息并清空输入区域
 		String message = inputArea.getText();
-		clearInputArea();
+		clearInputText();
 		// 发送消息到线程
 		writerThread.setMessage(message);
 	}
 	
-	private void clearInputArea() {
+	private void clearInputText() {
 		inputArea.setText("");
 	}
 	

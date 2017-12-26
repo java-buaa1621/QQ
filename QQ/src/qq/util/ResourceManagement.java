@@ -45,7 +45,6 @@ public abstract class ResourceManagement {
 	
 	
 	
-	
 	public static void debug(String info) {
 		System.out.println(info);
 	}
