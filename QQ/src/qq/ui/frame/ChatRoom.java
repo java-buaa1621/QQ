@@ -15,6 +15,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -25,12 +26,18 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutFocusTraversalPolicy;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 
 import qq.ui.component.FlowComponentScrollPanel;
+import qq.ui.component.FontAttrib;
 import qq.ui.component.UserInfoPanel;
 import qq.ui.componentFactory.AdapterFactory;
 import qq.ui.componentFactory.ButtonFactory;
@@ -82,19 +89,29 @@ public class ChatRoom extends JFrame {
 		大小由qq秀,头像确定 */
 	private Box mainBox = null;
 	// 历史消息展示区
-	private JPanel historyPane = null;
-	private JTextArea historyArea = null;
 	private final Dimension historySize = new Dimension(450, 400);
+	private JScrollPane historyScrollPane = null;
+	private JTextPane historyPane = null;
+	private StyledDocument doc = null; // 用此工具插入文字样式和图片
 	// 用户编辑区
 	private Box editBox = null;
 	private final Dimension editIconSize = new Dimension(18, 18);
 	private JRadioButton emojiButton = null;
 	private JRadioButton pictureButton = null;
+	// 用户字体区
+	private Box fontBox = null;
+	Dimension fontComboBoxSize = new Dimension(50,20); // 好像是内部字大小
+	private final int comboGap = 8;
+	private JComboBox<String> fontName = null;
+	private JComboBox<String> fontSize = null;
+	private JComboBox<String> fontStyle = null;
+	private JComboBox<String> fontColor = null;
+	private JComboBox<String> fontBackColor = null;
 	// 用户输入区
 	private Box inputBox = null;
 	private JTextArea inputArea = null;
 	private JButton sendButton = null;
-	private Dimension inputSize = new Dimension(450, 150);
+	private Dimension inputSize = new Dimension(450, 130);
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -120,7 +137,13 @@ public class ChatRoom extends JFrame {
 	
 	// TODO:用工厂实现，网络Socket需要获得ChatRoom实例
 	public ChatRoom(UserInfo info) {
-		thisRoom = this;
+		thisRoom = this; // 预设监听器所需要的final变量
+		
+		try { // 使用Windows的界面风格
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 600, 550);
@@ -131,6 +154,7 @@ public class ChatRoom extends JFrame {
 		this.initHeadPanel(info); 
 		this.initQQShow();
 		this.initEditPanel();
+		this.initFontComboxes();
 		this.initInputPanel();
 		this.initHistoryPanel();
 		
@@ -141,6 +165,7 @@ public class ChatRoom extends JFrame {
 		mainBox = Box.createVerticalBox();
 		mainBox.add(historyPane);
 		mainBox.add(editBox);
+		mainBox.add(fontBox);
 		mainBox.add(inputBox);
 		getContentPane().add(mainBox, BorderLayout.CENTER);
 	}
@@ -159,12 +184,12 @@ public class ChatRoom extends JFrame {
 		// 初始化editBox
 		editBox = Box.createHorizontalBox();
 		
+		// 初始化emoji, picture 按钮
 		initEmojiButton();
 		editBox.add(emojiButton);
 		initPictureButton();
 		editBox.add(pictureButton);
 		
-		// TODO:
 		editBox.add(Box.createHorizontalGlue()); // 填充占位
 	}
 	
@@ -189,7 +214,7 @@ public class ChatRoom extends JFrame {
 				}
 			}
 		});
-		//防止表情一直显示---------------------------
+		// ------------防止表情一直显示 TODO:完善
 		this.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -204,11 +229,11 @@ public class ChatRoom extends JFrame {
 		});
 		//---------------------------
 		emojiButton.addFocusListener(new FocusAdapter() {
-			// TODO:完善
 			@Override
 			public void focusLost(FocusEvent e) {
-				if(!(e.getOppositeComponent() instanceof EmojiDialog))
+				if(!(e.getOppositeComponent() instanceof EmojiDialog)) {
 					EmojiDialog.close();
+				}
 				// ResourceManagement.debug(e.getOppositeComponent().getClass().getName());
 			}
 		});
@@ -231,6 +256,51 @@ public class ChatRoom extends JFrame {
 				}
 			}
 		});
+	}
+	
+	protected void initFontComboxes(){
+		fontBox = Box.createVerticalBox();
+		Box innerBox = Box.createHorizontalBox();
+		
+		String[] str_name = { "宋体", "黑体", "Dialog", "Gulim" };
+		String[] str_Size = { "12", "14", "18", "22", "30", "40" };
+		String[] str_Style = { "常规", "斜体", "粗体", "粗斜体" };
+		String[] str_Color = { "黑色", "红色", "蓝色", "黄色", "绿色" };
+		String[] str_BackColor = { "无色", "灰色", "淡红", "淡蓝", "淡黄", "淡绿" };
+		fontName = new JComboBox(str_name); // 字体名称
+		fontSize = new JComboBox(str_Size); // 字号
+		fontStyle = new JComboBox(str_Style); // 样式
+		fontColor = new JComboBox(str_Color); // 颜色
+		fontBackColor = new JComboBox(str_BackColor); // 背景颜色
+		fontName.setPreferredSize(fontComboBoxSize);
+		fontSize.setPreferredSize(fontComboBoxSize);
+		fontStyle.setPreferredSize(fontComboBoxSize);
+		fontColor.setPreferredSize(fontComboBoxSize);
+		fontBackColor.setPreferredSize(fontComboBoxSize);
+		/* 
+		 * 初始化字体选择器
+		 * 1.加入标签
+		 * 2.加入组件
+		 * 3.间距	 
+		 */
+		innerBox.add(new JLabel("字体 ")); // 加入标签
+		innerBox.add(fontName); // 加入组件
+		innerBox.add(Box.createHorizontalStrut(comboGap)); // 横向间距
+		innerBox.add(new JLabel("样式 "));
+		innerBox.add(fontStyle);
+		innerBox.add(Box.createHorizontalStrut(comboGap));
+		innerBox.add(new JLabel("字号 "));
+		innerBox.add(fontSize);
+		innerBox.add(Box.createHorizontalStrut(comboGap));
+		innerBox.add(new JLabel("颜色 "));
+		innerBox.add(fontColor);
+		innerBox.add(Box.createHorizontalStrut(comboGap));
+		innerBox.add(new JLabel("背景 "));
+		innerBox.add(fontBackColor);
+		innerBox.add(Box.createHorizontalStrut(comboGap));
+		
+		fontBox.add(innerBox);
+		fontBox.add(Box.createVerticalStrut(comboGap)); // 底部间距 
 	}
 	
 	protected void initInputPanel(){
@@ -262,14 +332,14 @@ public class ChatRoom extends JFrame {
 	}
 	
 	protected void initHistoryPanel(){
-		historyPane = new JPanel();
-		historyPane.setBackground(Color.WHITE);
+		historyPane = new JTextPane();
+		historyPane.setBackground(Color.LIGHT_GRAY);
+		historyPane.setEditable(false);
 		
-		historyArea = new JTextArea();
-		historyArea.setBackground(Color.LIGHT_GRAY);
-		historyArea.setPreferredSize(historySize);
-		historyArea.setEditable(false);
-		historyPane.add(historyArea);
+		doc = historyPane.getStyledDocument(); // 获得JTextPane的Document
+		// 添加ScrollPane
+		historyScrollPane = new JScrollPane(historyPane);
+		historyScrollPane.setPreferredSize(historySize);
 	}
 	
 	
@@ -284,10 +354,18 @@ public class ChatRoom extends JFrame {
 		// TODO
 	}
 	
-	public void displayMessage(String text) {
+	private void displayText(FontAttrib attrib) {
 		// TODO 完善
-		historyArea.append("对方说： " + text + "\n");
+		try { // 插入文本
+			doc.insertString(doc.getLength(), "对方说： " + attrib.getText() + "\n",
+					attrib.getAttrSet());
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
 	}
+//	public void displayMessage(String text) {
+//		historyPane.append("对方说： " + text + "\n");
+//	}
 	
 	/**
 	 * 相当于发送信息
@@ -312,4 +390,49 @@ public class ChatRoom extends JFrame {
 	public void setReaderThread(SocketReaderThread readerThread) {
 		this.readerThread = readerThread;
 	}
+	
+	private FontAttrib getFontAttrib() {
+		FontAttrib att = new FontAttrib();
+		att.setText(inputArea.getText());
+		att.setName((String) fontName.getSelectedItem());
+		att.setSize(Integer.parseInt((String) fontSize.getSelectedItem()));
+		String temp_style = (String) fontStyle.getSelectedItem();
+		if (temp_style.equals("常规")) {
+			att.setStyle(FontAttrib.GENERAL);
+		} else if (temp_style.equals("粗体")) {
+			att.setStyle(FontAttrib.BOLD);
+		} else if (temp_style.equals("斜体")) {
+			att.setStyle(FontAttrib.ITALIC);
+		} else if (temp_style.equals("粗斜体")) {
+			att.setStyle(FontAttrib.BOLD_ITALIC);
+		}
+		String temp_color = (String) fontColor.getSelectedItem();
+		if (temp_color.equals("黑色")) {
+			att.setColor(new Color(0, 0, 0));
+		} else if (temp_color.equals("红色")) {
+			att.setColor(new Color(255, 0, 0));
+		} else if (temp_color.equals("蓝色")) {
+			att.setColor(new Color(0, 0, 255));
+		} else if (temp_color.equals("黄色")) {
+			att.setColor(new Color(255, 255, 0));
+		} else if (temp_color.equals("绿色")) {
+			att.setColor(new Color(0, 255, 0));
+		}
+		String temp_backColor = (String) fontBackColor.getSelectedItem();
+		if (!temp_backColor.equals("无色")) {
+			if (temp_backColor.equals("灰色")) {
+				att.setBackColor(new Color(200, 200, 200));
+			} else if (temp_backColor.equals("淡红")) {
+				att.setBackColor(new Color(255, 200, 200));
+			} else if (temp_backColor.equals("淡蓝")) {
+				att.setBackColor(new Color(200, 200, 255));
+			} else if (temp_backColor.equals("淡黄")) {
+				att.setBackColor(new Color(255, 255, 200));
+			} else if (temp_backColor.equals("淡绿")) {
+				att.setBackColor(new Color(200, 255, 200));
+			}
+		}
+		return att;
+	}
+	
 }

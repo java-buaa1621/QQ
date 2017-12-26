@@ -21,7 +21,7 @@ public class SocketReaderThread extends Thread{
 		try{
 			while (true) {
 				info = dis.readUTF();
-				chatWindow.displayMessage(info);
+				chatWindow.displayText(info);
 			}
 		}catch (IOException e) {
 			e.printStackTrace();
