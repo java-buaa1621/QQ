@@ -364,7 +364,7 @@ public class ChatRoom extends JFrame {
 		inputArea.append(text);
 	}
 	
-	public void insertPicture(File picture) {
+	public void sendPicture(ImageIcon picture) {
 		// TODO
 	}
 	

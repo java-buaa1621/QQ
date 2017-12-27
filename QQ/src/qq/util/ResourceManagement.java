@@ -3,6 +3,10 @@ package qq.util;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -32,13 +36,7 @@ public abstract class ResourceManagement {
 		ImageIcon icon = new ImageIcon("resource/image/face/" + faceiconIndex + ".gif");
 		return icon;
 	}
-	
-	public static ImageIcon scaledIcon(ImageIcon icon, int width, int height) {
-		Image img = new image
-		img = img.getScaledInstance(width, height, Image.SCALE_DEFAULT);
-		return icon = icon.getScaledInstance(width, height, Image.SCALE_DEFAULT);
-	}
-	
+
 	public static ImageIcon getScaledIcon(String path, Dimension iconSize) {
 		return getScaledIcon(path, iconSize.width, iconSize.height);
 	}
@@ -49,7 +47,23 @@ public abstract class ResourceManagement {
 		return new ImageIcon(img);
 	}
 	
-	
+	public static byte[] convertFileToByte(String filePath) throws IOException {
+		File file = new File(filePath);
+		byte[] bytes = new byte[(int) file.length()];
+        FileInputStream fis;
+        
+		fis = new FileInputStream(file);
+        ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
+        byte[] bb = new byte[2048];
+        int ch;
+        while ((ch = fis.read(bb)) != -1) {
+            bytestream.write(bb, 0, ch);
+        }
+        bytes = bytestream.toByteArray();
+		fis.close();
+		
+        return bytes;
+	}
 	
 	
 	public static void debug(String info) {
