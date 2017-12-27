@@ -391,6 +391,10 @@ public class ChatRoom extends JFrame {
 		this.readerThread = readerThread;
 	}
 	
+	/**
+	 * 获取输出的文本信息(包含字体属性)
+	 * @return
+	 */
 	private FontAttrib getFontAttrib() {
 		FontAttrib att = new FontAttrib();
 		att.setText(inputArea.getText());
