@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.net.SocketException;
 
+import qq.db.info.UserInfo;
 import qq.ui.frame.ChatRoom;
 import qq.util.ResourceManagement;
 
@@ -13,7 +14,27 @@ public class Server {
 	
 	public static ChatRoom chatWindow;
 	
-	public static void main(String args[]){
+	public Server(UserInfo caller, UserInfo beCaller){
+		try {
+			chatWindow = ChatRoom.createWindow(caller, beCaller);
+			ServerSocket serverSocket = new ServerSocket(9091);
+			Socket socket = serverSocket.accept();
+			ResourceManagement.debug("建立连接");
+			
+			// 读写线程共用一个聊天室
+			SocketWriterThread writerThread = new SocketWriterThread(socket);
+			chatWindow.setWriterThread(writerThread);
+			SocketReaderThread readerThread = new SocketReaderThread(socket);
+			readerThread.chatWindow = chatWindow;
+			
+			readerThread.start();
+			writerThread.start();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+/*	public static void main(String args[]){
 		try {
 			chatWindow = ChatRoom.createWindow();
 			ServerSocket serverSocket = new ServerSocket(9091);
@@ -31,7 +52,7 @@ public class Server {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 	
 	/**
 	 * 

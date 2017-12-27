@@ -441,6 +441,9 @@ public class ChatRoom extends JFrame {
 		ImageIcon icon = ResourceManagement.getHeadIcon(info.getHeadIconIndex());
 		displayIcon(icon);
 		changeLine();
+		
+		FontAttrib prefix = new FontAttrib(info.getMotto() + "说:  ");
+		displayWords(prefix);
 	}
 	
 	/** 展示输入图片 */
@@ -494,7 +497,7 @@ public class ChatRoom extends JFrame {
 	
 	public void displayReceivedText(FontAttrib textInfo) {
 		try {
-			displayUser(caller);
+			displayUser(beCaller);
 			displayText(textInfo);
 		} catch (BadLocationException e) {
 			e.printStackTrace();

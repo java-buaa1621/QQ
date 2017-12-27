@@ -44,6 +44,8 @@ import qq.db.util.DBManager;
 import qq.db.util.FriendListDAO;
 import qq.db.util.LoginInfoDAO;
 import qq.db.util.UserInfoDAO;
+import qq.socket.Client;
+import qq.socket.Server;
 import qq.ui.component.UserInfoPanel;
 import qq.ui.friend.FriTreeCellRenderer;
 import qq.ui.friend.FriTreeNode;
@@ -72,12 +74,14 @@ public class MainWindow extends JFrame {
 	private JPanel mainPane;
 	private JPanel funcPane;
 	
+	private UserInfo caller;
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					// ID 为0 必定查不到，走单元测试路线
-					startUp(0);
+					MainWindow window = new MainWindow();
+					window.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -95,6 +99,8 @@ public class MainWindow extends JFrame {
 	}
 	
 	private MainWindow(final UserInfo info) {
+		caller = info;
+		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setBounds(100, 100, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -109,23 +115,13 @@ public class MainWindow extends JFrame {
 	}
 	
 	protected void initComponents(final UserInfo info) {
-		if(info == null) {
-			// 此处if里面是为了单元化测试
-			// TODO: throw new IllegalArgumentException();
-			if(Constant.DEBUG){
-				this.initHeadPane();
-				this.initSwitchPane();
-				this.initMainPane();
-				this.initFuncPane();
-			} else {
+		if(info == null)
 				throw new IllegalArgumentException();
-			}
-		} else {
-			this.initHeadPane(info);
-			this.initSwitchPane();
-			this.initMainPane(info.getID());
-			this.initFuncPane();
-		}
+			
+		this.initHeadPane(info);
+		this.initSwitchPane();
+		this.initMainPane(info.getID());
+		this.initFuncPane();
 	}
 	
 	protected void initHeadPane(final UserInfo info) {
@@ -184,11 +180,34 @@ public class MainWindow extends JFrame {
 	private void initFriTree(final FriTreeNode root) {
 		// 创建树并加入jMode, renderer等组件
 		DefaultTreeModel jMode = new DefaultTreeModel(root);
-		JTree tree = new JTree(jMode);
+		final JTree tree = new JTree(jMode);
 		tree.setCellRenderer(new FriTreeCellRenderer());
 		tree.setRootVisible(false); // 不显示根节点
 		tree.putClientProperty("JTree.lineStyle", "None"); // 不显示纵向连线
 		tree.setToggleClickCount(1); //设置展开节点之前的鼠标单击数为1
+		tree.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				// 双击事件
+				if(e.getClickCount() == 2) {
+					FriTreeNode node = (FriTreeNode)tree.getLastSelectedPathComponent();
+					if(node.isThirdLayer()) {
+						final UserInfo beCaller = node.getUserInfo();
+						Thread server = new Thread() {
+							public void run() {
+								new Server(caller, beCaller);
+							}
+						};
+						Thread client = new Thread() {
+							public void run() {
+								new Client(beCaller, caller);
+							}
+						};
+						server.start();
+						// client.start();
+					}
+				}
+			}
+		});
 		mainPane.add(tree);
 		
 		// 加入JScrollPane
@@ -262,6 +281,25 @@ public class MainWindow extends JFrame {
 	
 	// ------------------------- 重载方法用于单元测试 ------------------------- //
 	
+	private MainWindow() {
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setResizable(false);
+		setBounds(100, 100, WINDOW_WIDTH, WINDOW_HEIGHT);
+		setTitle("QQ电脑版");
+		setIconImage(ResourceManagement.getImage("qq_icon.png"));
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		this.initComponents();
+	}
+	private void initComponents() {
+		this.initHeadPane();
+		this.initSwitchPane();
+		this.initMainPane();
+		this.initFuncPane();
+	}
+	
 	protected void initHeadPane() {
 		Rectangle pos = new Rectangle(0, 0, WINDOW_WIDTH, headPaneHeight);
 		headPane = new UserInfoPanel(new UserInfo(
@@ -306,8 +344,9 @@ public class MainWindow extends JFrame {
 				if(e.getClickCount() == 2) {
 					FriTreeNode node = (FriTreeNode)tree.getLastSelectedPathComponent();
 					if(node.isThirdLayer()) {
-						UserInfo info = node.getUserInfo();
-						info.getID();
+						UserInfo beCaller = node.getUserInfo();
+						new Server(caller, beCaller);
+						new Client(caller, beCaller);
 					}
 				}
 			}

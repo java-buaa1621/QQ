@@ -31,10 +31,17 @@ public class FontAttrib implements Serializable, Cloneable{
 		
 	}
 	
-	public FontAttrib(String text, SimpleAttributeSet attribSet) {
-		if(text == null || attribSet == null)
+	/** 常量构造 */
+	public FontAttrib(String text) {
+		if(text == null)
 			throw new IllegalArgumentException();
 		
+		this.text = text;
+		this.name = "宋体";
+		this.style = 0;
+		this.size = 14;
+		this.color = Color.BLACK;
+		this.backColor = Color.WHITE;
 	}
 
     @Override  
@@ -56,6 +63,23 @@ public class FontAttrib implements Serializable, Cloneable{
 		}
 		copy.setText(newText);
 		return copy;
+	}
+	
+	public static SimpleAttributeSet getDafaultSet() {
+		SimpleAttributeSet set = new SimpleAttributeSet();
+		// 字体
+		StyleConstants.setFontFamily(set, "宋体");
+		// 样式
+		StyleConstants.setBold(set, false);
+		StyleConstants.setItalic(set, false);
+		// 大小
+		StyleConstants.setFontSize(set, 14);
+		// 颜色
+		StyleConstants.setForeground(set, Color.BLACK);
+		// 底色
+		StyleConstants.setBackground(set, Color.WHITE);
+		
+		return set;
 	}
 	
 	/**
