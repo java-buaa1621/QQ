@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
+import javax.swing.ImageIcon;
+
 import org.omg.PortableInterceptor.DISCARDING;
 
 import qq.ui.component.FontAttrib;
@@ -14,6 +16,7 @@ import qq.util.ResourceManagement;
 
 /**
  * 接收消息线程
+ * 接收线程拥有聊天室
  */
 public class SocketReaderThread extends Thread{
 	private ObjectInputStream ois = null;
@@ -27,12 +30,16 @@ public class SocketReaderThread extends Thread{
 		try{
 			while (true) {
 				Object obj = ois.readObject();
-				FontAttrib textInfo = (FontAttrib) obj;
-				if(textInfo != null) {
-					ResourceManagement.debug("线程收到消息");
-					ResourceManagement.debug(textInfo);
-					chatWindow.displayText(textInfo);
+				if(obj instanceof FontAttrib) {
+					FontAttrib textInfo = (FontAttrib) obj;
+					if(textInfo != null) 
+						chatWindow.displayReceivedText(textInfo);
+				} else if(obj instanceof ImageIcon) {
+					ImageIcon picture = (ImageIcon) obj;
+					if(picture != null) 
+						chatWindow.displayReceivedPicture(picture);
 				}
+				
 			}
 		}catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();

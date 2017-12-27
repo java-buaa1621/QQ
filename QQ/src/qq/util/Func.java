@@ -71,4 +71,8 @@ public abstract class Func {
 		return objects;
 	}
 	
+	public static boolean isValidEmoji(int index) {
+		return isValid(index, Constant.START_FACE_ICON, Constant.END_FACE_ICON);
+	}
+	
 }

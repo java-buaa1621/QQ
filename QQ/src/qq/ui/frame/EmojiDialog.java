@@ -63,9 +63,9 @@ public class EmojiDialog extends JDialog {
 		
 		// 文件读取创建图片
 		ArrayList<JButton> buttons = new ArrayList<JButton>();
-		for(int i = 0; i <= Constant.MAX_FACE_ICON; i++) {
+		for(int i = Constant.START_FACE_ICON; i <= Constant.END_FACE_ICON; i++) {
 			final JButton faceButton = new JButton(
-					ResourceManagement.getFaceIcon(i));
+					ResourceManagement.getEmojiIcon(i));
 			faceButton.setName("[" + i + "]");
 			faceButton.setBackground(Color.WHITE);
 			

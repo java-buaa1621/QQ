@@ -30,7 +30,7 @@ public class UserInfo {
 		if (!Func.isPositiveInt(ID) | age < 0 
 				|| !Func.isValid(name, MAX_LEN) || !Func.isValid(motto, MAX_LEN)
 				|| (!sex.equals("男")  && !sex.equals("女")) 
-				|| !Func.isValid(headIconIndex, 1, Constant.MAX_HEAD_ICON)) 
+				|| !Func.isValid(headIconIndex, Constant.START_HEAD_ICON, Constant.END_HEAD_ICON)) 
 			throw new IllegalArgumentException("用户信息输入错误");
 		
 		this.ID = ID;

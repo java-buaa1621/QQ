@@ -15,15 +15,13 @@ public class Client {
 	
 	public static void main(String args[]) {
 		try {
-			chatWindow = ChatRoom.createWindow();	
+			chatWindow = ChatRoom.createWindow();
 			Socket socket = new Socket("127.0.0.1", 9091);
 			
 			// 读写线程共用一个聊天室
 			SocketWriterThread writerThread = new SocketWriterThread(socket);
 			chatWindow.setWriterThread(writerThread);
 			SocketReaderThread readerThread = new SocketReaderThread(socket);
-			chatWindow.setReaderThread(readerThread);
-			writerThread.chatWindow = chatWindow;
 			readerThread.chatWindow = chatWindow;
 			
 			readerThread.start();

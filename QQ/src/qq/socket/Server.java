@@ -24,8 +24,6 @@ public class Server {
 			SocketWriterThread writerThread = new SocketWriterThread(socket);
 			chatWindow.setWriterThread(writerThread);
 			SocketReaderThread readerThread = new SocketReaderThread(socket);
-			chatWindow.setReaderThread(readerThread);
-			writerThread.chatWindow = chatWindow;
 			readerThread.chatWindow = chatWindow;
 			
 			readerThread.start();

@@ -97,7 +97,7 @@ public class HeadIconWindow extends JFrame {
 		ArrayList<JRadioButton> headButtons = new ArrayList<JRadioButton>();
 		headGroup = new ButtonGroup(); // 初始化ButtonGroup
 		
-		for(int i = 1;i <= Constant.MAX_HEAD_ICON; i++) {
+		for(int i = Constant.START_HEAD_ICON;i <= Constant.END_HEAD_ICON; i++) {
 			JRadioButton rButton = initHeadButton(i);
 			headButtons.add(rButton);
 			headGroup.add(rButton); // 添加进ButtonGroup

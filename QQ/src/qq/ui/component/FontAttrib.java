@@ -10,7 +10,7 @@ import javax.swing.text.StyleConstants;
  * 字体的属性类
  * 包含文字内容与修饰的方法
  */
-public class FontAttrib implements Serializable{
+public class FontAttrib implements Serializable, Cloneable{
 	
 	private String text = null; // 要输入的文本
 	
@@ -18,6 +18,7 @@ public class FontAttrib implements Serializable{
 	public static final int BOLD = 1; // 粗体
 	public static final int ITALIC = 2; // 斜体
 	public static final int BOLD_ITALIC = 3; // 粗斜体
+	
 	
 	private String name = null; // 要输入的字体
 	private int style = 0; // 要输入的样式
@@ -29,7 +30,34 @@ public class FontAttrib implements Serializable{
 	public FontAttrib() {
 		
 	}
+	
+	public FontAttrib(String text, SimpleAttributeSet attribSet) {
+		if(text == null || attribSet == null)
+			throw new IllegalArgumentException();
+		
+	}
 
+    @Override  
+    protected FontAttrib clone() throws CloneNotSupportedException {  
+        return (FontAttrib)super.clone(); 
+    }  
+    
+	/**
+	 * 返回包含相同字体，新的文字的FontAttrib
+	 * @param text
+	 * @return 创建相同字体新文本的对象
+	 */
+	public FontAttrib toNewText(String newText) {
+		FontAttrib copy = null;
+		try {
+			copy = (FontAttrib) this.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		copy.setText(newText);
+		return copy;
+	}
+	
 	/**
 	 * 返回属性集
 	 * @return 属性集

@@ -250,7 +250,7 @@ public class RegisterWindow extends JFrame {
 	 * @param headIconIndex Í·Ïñ±êºÅ
 	 */
 	protected void setHeadIconIndex(int headIconIndex) {
-		if(!Func.isValid(headIconIndex, 1, Constant.MAX_HEAD_ICON))
+		if(!Func.isValid(headIconIndex, Constant.START_HEAD_ICON, Constant.END_HEAD_ICON))
 			throw new IllegalArgumentException("headIconIndex³ö·¶Î§");
 		this.headIconIndex = headIconIndex;
 	}

@@ -8,18 +8,21 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import javax.swing.ImageIcon;
+
 import qq.ui.component.FontAttrib;
 import qq.ui.frame.ChatRoom;
 import qq.util.ResourceManagement;
 
 /**
  * 发送消息线程
+ * 聊天室拥有发送线程
  */
 public class SocketWriterThread extends Thread{
 	private ObjectOutputStream oos = null;
-	public ChatRoom chatWindow = null;
 	// textInfo用于临时保存点击发送按钮后发送的信息
 	private FontAttrib textInfo = null;
+	private ImageIcon picture = null;
 	
 	/**
 	 * 
@@ -40,23 +43,20 @@ public class SocketWriterThread extends Thread{
 				 * 去掉会导致无法发送消息，我也不知道为什么
 				 * TODO:查原因！
 				 */
-				ResourceManagement.debug("");
-				FontAttrib textInfo = obtainMessage();
+				System.out.print("");
+				
+				FontAttrib textInfo = obtainTextInfo();
 				if(textInfo != null) {
-					ResourceManagement.debug("线程发送消息");
-					ResourceManagement.debug(textInfo);
-					sendMessage(textInfo);
+					sendTextInfo(textInfo);
+				}
+				ImageIcon picture = obtainPicture();
+				if(picture != null) {
+					sendPicture(picture);
 				}
 			}
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public void setTextInfo(FontAttrib textInfo) {
-		this.textInfo = textInfo;
-		ResourceManagement.debug("线程设置消息");
-		ResourceManagement.debug(textInfo);
 	}
 	
 	/**
@@ -65,19 +65,34 @@ public class SocketWriterThread extends Thread{
 	 * @return chatRoom图形界面点击发送时保存的信息
 	 * @throws IOException 
 	 */
-	protected FontAttrib obtainMessage() throws IOException {
+	protected FontAttrib obtainTextInfo() throws IOException {
 		FontAttrib sendInfo = this.textInfo;
 		this.textInfo = null;
-		if(sendInfo != null){
-			ResourceManagement.debug("线程设置发送消息");
-			ResourceManagement.debug(sendInfo);
-		}
 		return sendInfo;	
 	}
 	
-	protected void sendMessage(FontAttrib textInfo) throws IOException {
+	protected ImageIcon obtainPicture() throws IOException {
+		ImageIcon sendPicture = this.picture;
+		this.picture = null;
+		return sendPicture;	
+	}
+	
+	protected void sendTextInfo(FontAttrib textInfo) throws IOException {
 		oos.writeObject(textInfo);
 		oos.flush();
+	}
+	
+	protected void sendPicture(ImageIcon picture) throws IOException {
+		oos.writeObject(picture);
+		oos.flush();
+	}
+	
+	public void setTextInfo(FontAttrib textInfo) {
+		this.textInfo = textInfo;
+	}
+	
+	public void setPicture(ImageIcon picture) {
+		this.picture = picture;
 	}
 	
 }
