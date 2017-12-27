@@ -135,8 +135,13 @@ public class ChatRoom extends JFrame {
 		return chatRoom;
 	}
 	
-	// TODO:用工厂实现，网络Socket需要获得ChatRoom实例
-	public ChatRoom(UserInfo info) {
+	/**
+	 * 用工厂实现，网络Socket需要获得ChatRoom实例
+	 * @param info
+	 * @param writerThread
+	 * @param readerThread
+	 */
+	private ChatRoom(UserInfo info) {
 		thisRoom = this; // 预设监听器所需要的final变量
 		
 		try { // 使用Windows的界面风格
@@ -168,6 +173,15 @@ public class ChatRoom extends JFrame {
 		mainBox.add(fontBox);
 		mainBox.add(inputBox);
 		getContentPane().add(mainBox, BorderLayout.CENTER);
+		
+//		FontAttrib textInfo = new FontAttrib();
+//		textInfo.setText("你好");
+//		textInfo.setName("宋体");
+//		textInfo.setSize(40);
+//		textInfo.setStyle(FontAttrib.BOLD);
+//		textInfo.setColor(new Color(0, 0, 0));
+//		textInfo.setBackColor(new Color(200, 0, 0));
+//		displayText(textInfo);
 	}
 
 	protected void initHeadPanel(UserInfo info) {
@@ -354,18 +368,73 @@ public class ChatRoom extends JFrame {
 		// TODO
 	}
 	
-	private void displayText(FontAttrib attrib) {
-		// TODO 完善
+	public void displayPicture(File file) {
+		historyPane.setCaretPosition(doc.getLength()); // 设置插入位置
+		historyPane.insertIcon(new ImageIcon(file.getPath())); // 插入图片
+		displayText(new FontAttrib()); // 这样做可以换行
+	}
+	
+	public void displayText(FontAttrib textInfo) {
+		if(textInfo == null)
+			throw new IllegalArgumentException();
+		
+		ResourceManagement.debug("窗口展示消息");
+		ResourceManagement.debug(textInfo);
 		try { // 插入文本
-			doc.insertString(doc.getLength(), "对方说： " + attrib.getText() + "\n",
-					attrib.getAttrSet());
+			doc.insertString(doc.getLength(),
+					textInfo.getText() + "\n", textInfo.getAttrSet());
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
 	}
-//	public void displayMessage(String text) {
-//		historyPane.append("对方说： " + text + "\n");
-//	}
+	
+	/**
+	 * 从inputArea以及编辑面板获取文本信息
+	 * @return 待发送的FontAttrib
+	 */
+	private FontAttrib getTextInfo() {
+		FontAttrib textInfo = new FontAttrib();
+		textInfo.setText(inputArea.getText());
+		textInfo.setName((String) fontName.getSelectedItem());
+		textInfo.setSize(Integer.parseInt((String) fontSize.getSelectedItem()));
+		String temp_style = (String) fontStyle.getSelectedItem();
+		if (temp_style.equals("常规")) {
+			
+		} else if (temp_style.equals("粗体")) {
+			textInfo.setStyle(FontAttrib.BOLD);
+		} else if (temp_style.equals("斜体")) {
+			textInfo.setStyle(FontAttrib.ITALIC);
+		} else if (temp_style.equals("粗斜体")) {
+			textInfo.setStyle(FontAttrib.BOLD_ITALIC);
+		}
+		String temp_color = (String) fontColor.getSelectedItem();
+		if (temp_color.equals("黑色")) {
+			textInfo.setColor(new Color(0, 0, 0));
+		} else if (temp_color.equals("红色")) {
+			textInfo.setColor(new Color(255, 0, 0));
+		} else if (temp_color.equals("蓝色")) {
+			textInfo.setColor(new Color(0, 0, 255));
+		} else if (temp_color.equals("黄色")) {
+			textInfo.setColor(new Color(255, 255, 0));
+		} else if (temp_color.equals("绿色")) {
+			textInfo.setColor(new Color(0, 255, 0));
+		}
+		String temp_backColor = (String) fontBackColor.getSelectedItem();
+		if (!temp_backColor.equals("无色")) {
+			if (temp_backColor.equals("灰色")) {
+				textInfo.setBackColor(new Color(200, 200, 200));
+			} else if (temp_backColor.equals("淡红")) {
+				textInfo.setBackColor(new Color(255, 200, 200));
+			} else if (temp_backColor.equals("淡蓝")) {
+				textInfo.setBackColor(new Color(200, 200, 255));
+			} else if (temp_backColor.equals("淡黄")) {
+				textInfo.setBackColor(new Color(255, 255, 200));
+			} else if (temp_backColor.equals("淡绿")) {
+				textInfo.setBackColor(new Color(200, 255, 200));
+			}
+		}
+		return textInfo;
+	}
 	
 	/**
 	 * 相当于发送信息
@@ -373,10 +442,12 @@ public class ChatRoom extends JFrame {
 	 */
 	private void dealMessage() {
 		// 获取文本信息并清空输入区域
-		String message = inputArea.getText();
+		FontAttrib textInfo = getTextInfo();
 		clearInputText();
 		// 发送消息到线程
-		writerThread.setMessage(message);
+		writerThread.setTextInfo(textInfo);
+		ResourceManagement.debug("窗口发送消息");
+		ResourceManagement.debug(textInfo);
 	}
 	
 	private void clearInputText() {
@@ -389,54 +460,6 @@ public class ChatRoom extends JFrame {
 	
 	public void setReaderThread(SocketReaderThread readerThread) {
 		this.readerThread = readerThread;
-	}
-	
-	/**
-	 * 获取输出的文本信息(包含字体属性)
-	 * @return
-	 */
-	private FontAttrib getFontAttrib() {
-		FontAttrib att = new FontAttrib();
-		att.setText(inputArea.getText());
-		att.setName((String) fontName.getSelectedItem());
-		att.setSize(Integer.parseInt((String) fontSize.getSelectedItem()));
-		String temp_style = (String) fontStyle.getSelectedItem();
-		if (temp_style.equals("常规")) {
-			att.setStyle(FontAttrib.GENERAL);
-		} else if (temp_style.equals("粗体")) {
-			att.setStyle(FontAttrib.BOLD);
-		} else if (temp_style.equals("斜体")) {
-			att.setStyle(FontAttrib.ITALIC);
-		} else if (temp_style.equals("粗斜体")) {
-			att.setStyle(FontAttrib.BOLD_ITALIC);
-		}
-		String temp_color = (String) fontColor.getSelectedItem();
-		if (temp_color.equals("黑色")) {
-			att.setColor(new Color(0, 0, 0));
-		} else if (temp_color.equals("红色")) {
-			att.setColor(new Color(255, 0, 0));
-		} else if (temp_color.equals("蓝色")) {
-			att.setColor(new Color(0, 0, 255));
-		} else if (temp_color.equals("黄色")) {
-			att.setColor(new Color(255, 255, 0));
-		} else if (temp_color.equals("绿色")) {
-			att.setColor(new Color(0, 255, 0));
-		}
-		String temp_backColor = (String) fontBackColor.getSelectedItem();
-		if (!temp_backColor.equals("无色")) {
-			if (temp_backColor.equals("灰色")) {
-				att.setBackColor(new Color(200, 200, 200));
-			} else if (temp_backColor.equals("淡红")) {
-				att.setBackColor(new Color(255, 200, 200));
-			} else if (temp_backColor.equals("淡蓝")) {
-				att.setBackColor(new Color(200, 200, 255));
-			} else if (temp_backColor.equals("淡黄")) {
-				att.setBackColor(new Color(255, 255, 200));
-			} else if (temp_backColor.equals("淡绿")) {
-				att.setBackColor(new Color(200, 255, 200));
-			}
-		}
-		return att;
 	}
 	
 }

@@ -16,17 +16,18 @@ public class Server {
 	public static void main(String args[]){
 		try {
 			chatWindow = ChatRoom.createWindow();
-			chatWindow.setVisible(true);
-			ServerSocket s = new ServerSocket(9091);
-			Socket s1 = s.accept();
-			OutputStream os = s1.getOutputStream();
-			DataOutputStream dos = new DataOutputStream(os);
-			InputStream is = s1.getInputStream();
-			DataInputStream dis = new DataInputStream(is);
+			ServerSocket serverSocket = new ServerSocket(9091);
+			Socket socket = serverSocket.accept();
+			ResourceManagement.debug("建立连接");
 			
 			// 读写线程共用一个聊天室
-			SocketReaderThread readerThread = new SocketReaderThread(dis, chatWindow);
-			SocketWriterThread writerThread = new SocketWriterThread(dos, chatWindow);
+			SocketWriterThread writerThread = new SocketWriterThread(socket);
+			chatWindow.setWriterThread(writerThread);
+			SocketReaderThread readerThread = new SocketReaderThread(socket);
+			chatWindow.setReaderThread(readerThread);
+			writerThread.chatWindow = chatWindow;
+			readerThread.chatWindow = chatWindow;
+			
 			readerThread.start();
 			writerThread.start();
 		} catch (IOException e) {

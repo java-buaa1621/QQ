@@ -1,68 +1,83 @@
 package qq.socket;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
+import qq.ui.component.FontAttrib;
 import qq.ui.frame.ChatRoom;
+import qq.util.ResourceManagement;
 
+/**
+ * 发送消息线程
+ */
 public class SocketWriterThread extends Thread{
-	private DataOutputStream dos;
-	public final ChatRoom chatWindow;
-	// message用于临时保存点击发送按钮后发送的信息
-	private String message;
+	private ObjectOutputStream oos = null;
+	public ChatRoom chatWindow = null;
+	// textInfo用于临时保存点击发送按钮后发送的信息
+	private FontAttrib textInfo = null;
 	
 	/**
 	 * 
 	 * 函数设置参数，完成writerThread与chatWindow相互指向的设置
 	 * @param dos 输出流
 	 * @param chatWindow 与此线程绑定的JFrame对象<br/>
+	 * @throws IOException 
 	 */
-	public SocketWriterThread(DataOutputStream dos, ChatRoom chatWindow){
-		this.dos = dos;
-		chatWindow.setWriterThread(this);
-		this.chatWindow = chatWindow;
+	public SocketWriterThread(Socket socket) throws IOException{
+		oos = new ObjectOutputStream(socket.getOutputStream());  
 	}
 	
 	public void run() {
-		InputStreamReader isr = new InputStreamReader(System.in);
-		BufferedReader br = new BufferedReader(isr);
-		
 		try {
 			while (true) {
-				String info = obtainMessage();
-				sendMessage(info);
+				/**
+				 * 此句不能去掉！此句不能去掉！此句不能去掉！
+				 * 去掉会导致无法发送消息，我也不知道为什么
+				 * TODO:查原因！
+				 */
+				ResourceManagement.debug("");
+				FontAttrib textInfo = obtainMessage();
+				if(textInfo != null) {
+					ResourceManagement.debug("线程发送消息");
+					ResourceManagement.debug(textInfo);
+					sendMessage(textInfo);
+				}
 			}
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void setMessage(String message) {
-		this.message = message;
+	public void setTextInfo(FontAttrib textInfo) {
+		this.textInfo = textInfo;
+		ResourceManagement.debug("线程设置消息");
+		ResourceManagement.debug(textInfo);
 	}
 	
 	/**
 	 * 
 	 * 循环等待直到点击发送且信息不为空
 	 * @return chatRoom图形界面点击发送时保存的信息
+	 * @throws IOException 
 	 */
-	protected String obtainMessage() {
-		String info;
-		// 循环等待直到info不为空
-		do{
-			info = this.message;
-			System.out.flush(); // TODO debug(删去这一行，无法发送消息)
-		}while(info == null);
-		// 清除message
-		this.message = null;
-		
-		return info;	
+	protected FontAttrib obtainMessage() throws IOException {
+		FontAttrib sendInfo = this.textInfo;
+		this.textInfo = null;
+		if(sendInfo != null){
+			ResourceManagement.debug("线程设置发送消息");
+			ResourceManagement.debug(sendInfo);
+		}
+		return sendInfo;	
 	}
-
-	protected void sendMessage(String info) throws IOException {
-		dos.writeUTF(info);
+	
+	protected void sendMessage(FontAttrib textInfo) throws IOException {
+		oos.writeObject(textInfo);
+		oos.flush();
 	}
 	
 }

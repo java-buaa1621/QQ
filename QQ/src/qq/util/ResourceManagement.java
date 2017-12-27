@@ -8,6 +8,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import qq.db.info.UserInfo;
+import qq.ui.component.FontAttrib;
 
 
 public abstract class ResourceManagement {
@@ -30,6 +31,12 @@ public abstract class ResourceManagement {
 	public static ImageIcon getFaceIcon(int faceiconIndex) {
 		ImageIcon icon = new ImageIcon("resource/image/face/" + faceiconIndex + ".gif");
 		return icon;
+	}
+	
+	public static ImageIcon scaledIcon(ImageIcon icon, int width, int height) {
+		Image img = new image
+		img = img.getScaledInstance(width, height, Image.SCALE_DEFAULT);
+		return icon = icon.getScaledInstance(width, height, Image.SCALE_DEFAULT);
 	}
 	
 	public static ImageIcon getScaledIcon(String path, Dimension iconSize) {
@@ -58,5 +65,11 @@ public abstract class ResourceManagement {
 		System.out.println(info.getID());
 		System.out.println(info.getName());
 		System.out.println(info.getMotto());
+	}
+	public static void debug(FontAttrib attrib) {
+		System.out.println(attrib.getText());
+		System.out.println("name:" + attrib.getName());
+		System.out.println("size:" + attrib.getSize());
+		System.out.println("style:" + attrib.getStyle());
 	}
 }

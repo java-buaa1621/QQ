@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;  
 import java.net.ServerSocket;  
 import java.net.Socket;  
+
+import javax.swing.ImageIcon;
   
 public class CUploadPhotoServer {  
   
@@ -21,7 +23,7 @@ public class CUploadPhotoServer {
         //创建图片字节流  
         FileOutputStream fos = new FileOutputStream("C:/Users/asus/Documents/GitHub/QQ/QQ/resource/image/back8.jpg");  
         byte[] buf = new byte[1024];  
-        int len = 0;  
+        int len = 0; 
         //往字节流里写图片数据  
         while ((len = in.read(buf)) != -1)  
         {  

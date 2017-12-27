@@ -1,6 +1,7 @@
 package qq.ui.component;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -9,7 +10,7 @@ import javax.swing.text.StyleConstants;
  * 字体的属性类
  * 包含文字内容与修饰的方法
  */
-public class FontAttrib {
+public class FontAttrib implements Serializable{
 	
 	private String text = null; // 要输入的文本
 	
