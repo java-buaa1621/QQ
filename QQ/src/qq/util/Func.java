@@ -1,13 +1,25 @@
 package qq.util;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 
 /**
  * 全局多次使用的函数
  */
 public abstract class Func {
+	
+	/** 使用Windows的界面风格 */
+	public static void useWindowsStyle() {
+		try { 
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * @param s 待检测字符串
@@ -73,6 +85,21 @@ public abstract class Func {
 	
 	public static boolean isValidEmoji(int index) {
 		return isValid(index, Constant.START_FACE_ICON, Constant.END_FACE_ICON);
+	}
+	
+	public static String getDate() {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+		return df.format(new Date());// new Date()为获取当前系统时间
+	}
+	
+	public static String getClock() {
+		SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");//设置日期格式
+		return df.format(new Date());// new Date()为获取当前系统时间
+	}
+	
+	public static String getTime() {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+		return df.format(new Date());// new Date()为获取当前系统时间
 	}
 	
 }

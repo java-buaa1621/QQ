@@ -74,6 +74,7 @@ public class HeadIconWindow extends JFrame {
 	private HeadIconWindow(RegisterWindow callerWindow) {
 		this.callerWindow = callerWindow;
 		
+		//setUndecorated(true); // ÎÞ±ß¿ò
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 446, 341);
 		setTitle("Ñ¡ÔñÍ·Ïñ");

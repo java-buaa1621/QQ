@@ -29,7 +29,9 @@ import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.metal.MetalBorders.Flush3DBorder;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -75,6 +77,8 @@ import java.util.regex.Pattern;
 
 import javax.swing.JTextArea;
 
+import com.mysql.jdbc.Buffer;
+
 import qq.db.info.UserInfo;
 import qq.socket.*;
 
@@ -98,6 +102,8 @@ public class ChatRoom extends JFrame {
 	private JScrollPane historyScrollPane = null;
 	private JTextPane historyPane = null;
 	private StyledDocument doc = null; // 用此工具插入文字样式和图片
+	private TextBuffer textReceivedBuffer = null;
+	private TextBuffer textSendBuffer = null;
 	// 用户编辑区
 	private Box editBox = null;
 	private final Dimension editIconSize = new Dimension(18, 18);
@@ -159,13 +165,8 @@ public class ChatRoom extends JFrame {
 		this.caller = caller;
 		this.beCaller = beCaller;
 		
-		try { // 使用Windows的界面风格
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		Func.useWindowsStyle();
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 600, 550);
 		setResizable(false);
 		setTitle("QQ电脑版");
@@ -263,7 +264,7 @@ public class ChatRoom extends JFrame {
 				if(!(e.getOppositeComponent() instanceof EmojiDialog)) {
 					EmojiDialog.close();
 				}
-				// ResourceManagement.debug(e.getOppositeComponent().getClass().getName());
+				// ResourceManagement.debug(e.gesizepositeComponent().getClass().getName());
 			}
 		});
 	}
@@ -373,17 +374,65 @@ public class ChatRoom extends JFrame {
 		historyPane = new JTextPane();
 		historyPane.setBackground(Color.WHITE);
 		historyPane.setEditable(false);
-		
 		doc = historyPane.getStyledDocument(); // 获得JTextPane的Document
+		
 		// 添加ScrollPane
 		historyScrollPane = new JScrollPane(historyPane);
 		historyScrollPane.setPreferredSize(historySize);
+		if(!Constant.DEBUG)
+			historyScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		initTextBuffer();
+		initHistoryText();
+		displayTime();
 	}
 	
 	
+	// ------------------------------------- 历史消息逻辑部分 ------------------------------- //
 	
-	// ------------------------------------- 逻辑部分 ------------------------------- //
-
+	protected void initTextBuffer() {
+		textReceivedBuffer = new TextBuffer() {
+			@Override
+			protected void dealTextInfo(Object[] textInfos, int size) {
+				for(int i = 0; i < size; i++) {
+					Object textInfo =  textInfos[i];
+					if(textInfo instanceof ImageIcon) {
+						displayIcon((ImageIcon) textInfo);
+					} else if(textInfo instanceof FontAttrib) {
+						displayWords((FontAttrib) textInfo);
+					}
+				}
+			}
+		};
+		textSendBuffer = new TextBuffer() {
+			@Override
+			protected void dealTextInfo(Object[] textInfos, int size) {
+				takeLeftLine();
+				for(int i = 0; i < size; i++) {
+					Object textInfo =  textInfos[i];
+					if(textInfo instanceof ImageIcon) {
+						displayIcon((ImageIcon) textInfo);
+					} else if(textInfo instanceof FontAttrib) {
+						displayWords((FontAttrib) textInfo);
+					}
+				}
+			}
+		};
+	}
+	
+	protected void initHistoryText() {
+		// TODO:
+	}
+	
+	protected void displayTime() {
+		try {
+			displayWords(new FontAttrib(Func.getTime()));
+			changeLine(2);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * 相当于发送信息
 	 * 包含清除区域，向writerThread发送消息
@@ -415,7 +464,6 @@ public class ChatRoom extends JFrame {
 		if(icon == null)
 			throw new IllegalArgumentException();
 
-		historyPane.add(Box.createHorizontalGlue());
 		historyPane.setCaretPosition(doc.getLength()); // 设置插入位置
 		historyPane.insertIcon(icon); // 插入图片
 	}
@@ -424,39 +472,66 @@ public class ChatRoom extends JFrame {
 	 * doc中插入文字 
 	 * @param FontAttrib类型文本
 	 */
-	private void displayWords(FontAttrib words) throws BadLocationException {
+	private void displayWords(FontAttrib words) {
 		if(words == null)
 			throw new IllegalArgumentException();
 		
-		doc.insertString(doc.getLength(), words.getText(), words.getAttrSet());
+		try {
+			doc.insertString(doc.getLength(), words.getText(), words.getAttrSet());
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/** 换行 */
-	private void changeLine() throws BadLocationException {
-		doc.insertString(doc.getLength(), "\n", new SimpleAttributeSet());
+	private void changeLine() {
+		try {
+			doc.insertString(doc.getLength(), "\n", new SimpleAttributeSet());
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/** 换行 */
+	private void changeLine(int time) {
+		if(time <= 0)
+			throw new IllegalArgumentException();
+		while(time-- > 0)
+			changeLine();
+	}
+	
+	/** 使用glue占据左端空白 */
+	private void takeLeftLine() {
+		historyPane.setCaretPosition(doc.getLength()); // 找到插入位置
+		historyPane.insertComponent(Box.createHorizontalGlue()); // 使得插入头像文字偏移
+		// historyPane.insertComponent(new JButton("button"));
 	}
 	
 	/** 展示用户头像 */
-	private void displayUser(UserInfo info) throws BadLocationException {
+	private void displayUser(UserInfo info) {
 		ImageIcon icon = ResourceManagement.getHeadIcon(info.getHeadIconIndex());
 		displayIcon(icon);
-		changeLine();
-		
-		FontAttrib prefix = new FontAttrib(info.getMotto() + "说:  ");
+		FontAttrib prefix;
+		if(info.getID() == caller.getID()) { // 使用者
+			prefix = new FontAttrib("你说:  ");
+		} else { 							// 对方
+			prefix = new FontAttrib(info.getMotto() + "说:  ");
+		}
 		displayWords(prefix);
+		changeLine(2);
 	}
 	
 	/** 展示输入图片 */
-	private void displayPicture(ImageIcon picture) throws BadLocationException {
+	private void displayPicture(ImageIcon picture) {
 		if(picture == null)
 			throw new IllegalArgumentException();
 		
 		displayIcon(picture);
-		changeLine();
+		changeLine(2);
 	}
 	
 	/** 展示输入含emoji文本 */
-	private void displayText(FontAttrib textInfo) throws BadLocationException {
+	private void displayText(FontAttrib textInfo) {
 		if(textInfo == null)
 			throw new IllegalArgumentException();
 
@@ -468,9 +543,9 @@ public class ChatRoom extends JFrame {
 		while (matcher.find()) {
 			String matchStr = matcher.group(1);
 			String indexStr = matchStr.substring(1, matchStr.length() - 1);
-			int index = Integer.parseInt(indexStr); // emoji 编号
+			int index = Integer.parseInt(indexStr); // emoji编号
 			String displayText = null;
-			if(Func.isValidEmoji(index)) {
+			if(Func.isValidEmoji(index)) { // 找到合法emoji
 				displayText = text.substring(restStart, matcher.start());
 				displayWords(textInfo.toNewText(displayText));
 				displayIcon(ResourceManagement.getEmojiIcon(index));
@@ -483,44 +558,35 @@ public class ChatRoom extends JFrame {
 		// 剩余文本不存在寻找的字段，输出剩余的文字
 		String restText = text.substring(restStart, text.length());
 		displayWords(textInfo.toNewText(restText));
-		changeLine();
+		changeLine(2);
 	}
 	
 	public void displayReceivedPicture(ImageIcon picture) {
-		try {
-			displayUser(beCaller);
-			displayPicture(picture);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+		displayUser(beCaller);
+		displayPicture(picture);
 	}
 	
 	public void displayReceivedText(FontAttrib textInfo) {
-		try {
-			displayUser(beCaller);
-			displayText(textInfo);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+		displayUser(beCaller);
+		displayText(textInfo);
 	}
 	
 	private void displaySendPicture(ImageIcon picture) {
-		try {
-			displayUser(caller);
-			displayPicture(picture);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+		takeLeftLine();
+		displayUser(caller);
+		takeLeftLine();
+		displayPicture(picture);
 	}
 	
 	private void displaySendText(FontAttrib textInfo) {
-		try {
-			displayUser(caller);
-			displayText(textInfo);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+		takeLeftLine();
+		displayUser(caller);
+		takeLeftLine();
+		displayText(textInfo);
 	}
+	
+	
+	// ------------------------------------- 逻辑部分 ------------------------------- //
 	
 	/**
 	 * 从inputArea以及编辑面板获取文本信息
@@ -582,4 +648,39 @@ public class ChatRoom extends JFrame {
 		this.writerThread = writerThread;
 	}
 
+}
+
+abstract class TextBuffer {
+	
+	protected final static int MAX_SIZE = 70; // 容量
+	protected Object[] textInfo;
+	protected int size; // 相当于当前总数
+	
+	public TextBuffer() {
+		textInfo = new Object[MAX_SIZE];
+		clear();
+	}
+	
+	protected void clear() {
+		for(int i = 0; i < MAX_SIZE; i++) 
+			textInfo[i] = null;
+		size = 0;
+	}
+	
+	public void insert(Object obj) {
+		if(obj == null)
+			throw new IllegalArgumentException();
+		
+		textInfo[size++] = obj;
+		if(size == MAX_SIZE)
+			flush();
+	}
+	
+	public void flush() {
+		dealTextInfo(textInfo, size);
+		clear();
+	}
+	
+	protected abstract void dealTextInfo(Object[] textInfos, int size);
+			
 }

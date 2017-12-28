@@ -21,6 +21,8 @@ public class FriTreeNode implements TreeNode{
 	protected ArrayList<TreeNode> children;
 	protected UserInfoPanel panel;
 	
+	protected boolean onClickPaint = false; // 只有叶子节点才能画
+	
 	/**
 	 * 用于创建根节点
 	 */
@@ -142,6 +144,10 @@ public class FriTreeNode implements TreeNode{
 	
 	public UserInfoPanel getPanel() {
 		return panel;
+	}
+	
+	public void setOnClickPaint(boolean paint) {
+		this.onClickPaint = paint;
 	}
 	
 }

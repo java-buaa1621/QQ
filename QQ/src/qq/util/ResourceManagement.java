@@ -127,10 +127,6 @@ public abstract class ResourceManagement {
 
 		return bytes;
 	}
-
-	
-	
-	
 	
 	
 	

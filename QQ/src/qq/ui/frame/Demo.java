@@ -27,7 +27,7 @@ public class Demo {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());  
           
         //初始化窗体  
-        JFrame frame=new JFrame("My QQ");  
+        final JFrame frame=new JFrame("My QQ");  
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
         frame.setSize(500, 500);  
         frame.setLocationRelativeTo(null);  
@@ -73,10 +73,10 @@ public class Demo {
         Jmenu.add(closemenu);  
           
         //得到当前系统托盘  
-        SystemTray systemtray = SystemTray.getSystemTray();  
+        final SystemTray systemtray = SystemTray.getSystemTray();  
           
         //创建带指定图像、工具提示和弹出菜单的 MyTrayIcon  
-        MyTrayIcon trayicon=new MyTrayIcon(img.getImage(),"MyQQ",Jmenu);  
+        final MyTrayIcon trayicon=new MyTrayIcon(img.getImage(),"MyQQ",Jmenu);  
           
         //将TrayIcon添加到系统托盘  
         try {  

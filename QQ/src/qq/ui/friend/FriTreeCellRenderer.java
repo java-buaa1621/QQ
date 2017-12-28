@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Panel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -22,6 +23,7 @@ public class FriTreeCellRenderer implements TreeCellRenderer {
 	
 	ImageIcon arrow_left;
 	ImageIcon arrow_down;
+	private static Color onClickColor = Color.LIGHT_GRAY; 
 	
 	public FriTreeCellRenderer(){
 		arrow_left = ResourceManagement.getImageIcon("arrow_left.png"); //节点折叠时的图片
@@ -36,14 +38,16 @@ public class FriTreeCellRenderer implements TreeCellRenderer {
 		boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		 // 把value转换为节点
 		FriTreeNode fri = (FriTreeNode) value;
-		// 节点需要不为根节点，和根节点的孩子节点
-		if (leaf && fri.getParent() != tree.getModel().getRoot()) { 
+		// 绘制叶子节点，节点需要不为根节点，和根节点的孩子节点
+		if (leaf && fri.getParent() != tree.getModel().getRoot()) {
 			UserInfoPanel panel = new UserInfoPanel(fri.getUserInfo());
-			panel.setPreferredSize(UserInfoPanel.minPanelSize);
+			panel.setPreferredSize(UserInfoPanel.minPanelSize); 
+			if(fri.onClickPaint)
+				panel.setBackground(onClickColor);
 			
 			fri.setPanel(panel);
 			return panel;
-		// 非叶子节点的文字为节点的nodeName
+		// 绘制非叶子节点，非叶子节点的文字为节点的nodeName
 		} else { 
 			JLabel midLabel = new JLabel();
 			midLabel.setText(fri.getNodeName()); // 设置JLable的文字

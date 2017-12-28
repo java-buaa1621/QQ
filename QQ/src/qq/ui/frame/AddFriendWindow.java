@@ -28,6 +28,7 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 
 import qq.db.info.UserInfo;
+import qq.db.util.DBManager;
 import qq.db.util.UserInfoDAO;
 import qq.exception.AlertException;
 import qq.ui.component.*;
@@ -46,6 +47,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.net.ContentHandlerFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -62,9 +66,15 @@ public class AddFriendWindow extends JFrame {
 	private IDTextField IDField;
 	private FlowComponentScrollPanel<JPanel> showPane;
 	private JButton searchButton;
+	private JButton addButton;
+	private int addID = 0;
 	private JTextField textField;
 	private ArrayList<JRadioButton> rButtons;
 	private ButtonGroup bGroup;
+
+	private UserInfo caller = null;
+	private MainWindow callerWindow = null;
+	
 	/** 本类的点击searchButton交互Action */
 	private MyAction searchAction = new MyAction() {
 		@Override
@@ -72,6 +82,7 @@ public class AddFriendWindow extends JFrame {
 			dealClick();			
 		}
 	};
+	private JButton button;
 	
 	/**
 	 * Launch the application.
@@ -80,7 +91,8 @@ public class AddFriendWindow extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					startUp();
+					AddFriendWindow window = new AddFriendWindow();
+					window.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -88,13 +100,13 @@ public class AddFriendWindow extends JFrame {
 		});
 	}
 
-	public static void startUp() {
-		AddFriendWindow frame = new AddFriendWindow();
+	public static void startUp(UserInfo caller, MainWindow callerWindow) {
+		AddFriendWindow frame = new AddFriendWindow(caller, callerWindow);
 		frame.setVisible(true);
 	}
 	
 	/**
-	 * Create the frame.
+	 * 单元测试
 	 */
 	public AddFriendWindow() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -111,6 +123,15 @@ public class AddFriendWindow extends JFrame {
 		initIDField();
 		initShowPane();
 		initSearchButton();
+		initAddButton();
+	}
+	
+	public AddFriendWindow(UserInfo caller, MainWindow callerWindow) {
+		this();
+		if(caller == null || callerWindow == null)
+			throw new IllegalArgumentException();
+		this.caller = caller;
+		this.callerWindow = callerWindow;
 	}
 	
 	public void initRadioButton() {
@@ -161,7 +182,7 @@ public class AddFriendWindow extends JFrame {
 	
 	public void initSearchButton() {
 		searchButton = new JButton("查找");
-		
+		searchButton.setBounds(314, 228, 93, 23);
 		// 回应鼠标选择
 		searchButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
@@ -170,11 +191,27 @@ public class AddFriendWindow extends JFrame {
 		});
 		// 添加快捷键
 		ComponentFunc.setShortCutKey(searchButton, KeyEvent.VK_ENTER, searchAction);
-		
-		searchButton.setBounds(314, 228, 93, 23);
 		contentPane.add(searchButton);
 	}
 	
+	public void initAddButton() {
+		addButton = new JButton("添加");
+		addButton.setBounds(204, 228, 93, 23);
+		
+		final AddFriendWindow frame = this;
+		addButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					DBManager.addFriend(caller.getID(), addID);
+					frame.dispose();
+					callerWindow.reloadMainPane();
+				} catch (SQLException e1) {
+					AlertWindow.startUp("添加用户不存在、和用户相同或其他错误");
+				}
+			}
+		});
+		contentPane.add(addButton);
+	}
 	
 	// -------------------------- 逻辑部分 -------------------------- //
 	
@@ -222,7 +259,13 @@ public class AddFriendWindow extends JFrame {
 		
 		showPane.removeAll();
 		for(UserInfo info : userInfos){
-			UserInfoPanel infoPane = new UserInfoPanel(info);
+			final UserInfoPanel infoPane = new UserInfoPanel(info);
+			infoPane.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					infoPane.setBackground(Color.LIGHT_GRAY);
+					addID = infoPane.getUserInfo().getID();
+				}
+			});
 			//TODO add border  infoPane.setBorder(BorderFactory.createLineBorder(Color.BLACK)); 
 			showPane.addComp(infoPane);
 		}

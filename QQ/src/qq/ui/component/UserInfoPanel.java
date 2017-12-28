@@ -19,6 +19,7 @@ import qq.util.ResourceManagement;
 
 public class UserInfoPanel extends JPanel{
 	
+	private UserInfo info;
 	public static final Dimension minPanelSize = new Dimension(170, 70);
 	
 	/**
@@ -28,6 +29,7 @@ public class UserInfoPanel extends JPanel{
 	public UserInfoPanel(UserInfo info) {
 		if (info == null)
 			throw new IllegalArgumentException();
+		this.info = info;
 		
 		ImageIcon headIcon = ResourceManagement.getHeadIcon(info.getHeadIconIndex());
 		String userName = info.getName();
@@ -84,6 +86,10 @@ public class UserInfoPanel extends JPanel{
 	public void setFocusColor(Color enterColor, Color exitColor) {
 		addMouseListener(
 				AdapterFactory.createMouseEnterAndExitAdapter(this, enterColor, exitColor));
+	}
+	
+	public UserInfo getUserInfo() {
+		return this.info;
 	}
 	
 }

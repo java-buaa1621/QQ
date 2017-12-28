@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
 
+import javax.sound.midi.MidiDevice.Info;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -50,6 +51,7 @@ import qq.ui.component.UserInfoPanel;
 import qq.ui.friend.FriTreeCellRenderer;
 import qq.ui.friend.FriTreeNode;
 import qq.util.Constant;
+import qq.util.Func;
 import qq.util.ResourceManagement;
 
 import javax.swing.SwingConstants;
@@ -67,13 +69,16 @@ public class MainWindow extends JFrame {
 	final int switchPaneHeight =  (int)(WINDOW_HEIGHT * 0.07);
 	final int mainPaneHeight =  (int)(WINDOW_HEIGHT * 0.675);
 	final int funcPaneHeight =  (int)(WINDOW_HEIGHT * 0.075);
-	
+	// 主要面板
 	private JPanel contentPane;
 	private UserInfoPanel headPane;
 	private JPanel switchPane;
 	private JPanel mainPane;
+	// 方法面板
 	private JPanel funcPane;
-	
+	// 辅助监听
+	private MainWindow thisWindow;
+	// 数据信息
 	private UserInfo caller;
 	
 	public static void main(String[] args) {
@@ -99,9 +104,10 @@ public class MainWindow extends JFrame {
 	}
 	
 	private MainWindow(final UserInfo info) {
-		caller = info;
+		this.caller = info;
+		this.thisWindow = this;
 		
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 关闭窗口程序结束
 		setResizable(false);
 		setBounds(100, 100, WINDOW_WIDTH, WINDOW_HEIGHT);
 		setTitle("QQ电脑版");
@@ -118,10 +124,10 @@ public class MainWindow extends JFrame {
 		if(info == null)
 				throw new IllegalArgumentException();
 			
-		this.initHeadPane(info);
-		this.initSwitchPane();
-		this.initMainPane(info.getID());
-		this.initFuncPane();
+		initHeadPane(info);
+		initSwitchPane();
+		loadMainPane();
+		initFuncPane();
 	}
 	
 	protected void initHeadPane(final UserInfo info) {
@@ -132,9 +138,9 @@ public class MainWindow extends JFrame {
 	
 	protected void initSwitchPane() {
 		final int BUTTON_NUMBER = 4;
-		final int BUTTON_WIDTH = 50;
+		final int BUTTON_WIDTH = 60;
 		final int BUTTON_HEIGHT = 35; 
-		final int gapX = 15;
+		final int gapX = 8;
 		final int gapY = 5;
 		
 		switchPane = new JPanel();
@@ -144,40 +150,43 @@ public class MainWindow extends JFrame {
 		this.contentPane.add(switchPane);
 		
 		// TODO add actionListener
-		JButton switch1 = new JButton("1");
+		JButton switch1 = new JButton("好友");
 		switch1.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
 		switchPane.add(switch1);
 		
-		JButton switch2 = new JButton("2");
+		JButton switch2 = new JButton("群组");
 		switch2.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
 		switchPane.add(switch2);
 		
-		JButton switch3 = new JButton("3");
+		JButton switch3 = new JButton("聊天");
 		switch3.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
 		switchPane.add(switch3);
 		
-		JButton switch4 = new JButton("4");
+		JButton switch4 = new JButton("空间");
 		switch4.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
 		switchPane.add(switch4);
 		
 	}
 	
-	private void initMainPane(int ID) {
+	/**
+	 * 不添加，只更新MainPane，以及JTree相关组件
+	 * @param ID
+	 */
+	private void refreshMainPane(int ID) {
 		mainPane = new JPanel();
 		mainPane.setBounds(0, headPaneHeight + switchPaneHeight,
 				WINDOW_WIDTH, mainPaneHeight);
 		mainPane.setLayout(new BorderLayout(0, 0)); // 相对布局，jScrollPane在中间
-		this.contentPane.add(mainPane);
 		// 初始化好友树
-		FriTreeNode root = initFriTreeNode(ID);
-		initFriTree(root);
+		FriTreeNode root = refreshFriTreeNode(ID);
+		refreshFriTree(root);
 	}
 	
 	/**
 	 * 根据根节点组建JTree,加入一些配置(如加入JScrollPane),最后放入mainPane
 	 * @param root 根节点
 	 */
-	private void initFriTree(final FriTreeNode root) {
+	private void refreshFriTree(final FriTreeNode root) {
 		// 创建树并加入jMode, renderer等组件
 		DefaultTreeModel jMode = new DefaultTreeModel(root);
 		final JTree tree = new JTree(jMode);
@@ -186,24 +195,20 @@ public class MainWindow extends JFrame {
 		tree.putClientProperty("JTree.lineStyle", "None"); // 不显示纵向连线
 		tree.setToggleClickCount(1); //设置展开节点之前的鼠标单击数为1
 		tree.addMouseListener(new MouseAdapter() {
+			FriTreeNode lastNode = null;
 			public void mouseClicked(MouseEvent e) {
 				// 双击事件
 				if(e.getClickCount() == 2) {
+					if(lastNode != null) {
+						lastNode.setOnClickPaint(false);
+					}
 					FriTreeNode node = (FriTreeNode)tree.getLastSelectedPathComponent();
 					if(node.isThirdLayer()) {
-						final UserInfo beCaller = node.getUserInfo();
-						Thread server = new Thread() {
-							public void run() {
-								new Server(caller, beCaller);
-							}
-						};
-						Thread client = new Thread() {
-							public void run() {
-								new Client(beCaller, caller);
-							}
-						};
-						server.start();
-						// client.start();
+						node.setOnClickPaint(true);
+						tree.repaint();
+						UserInfo beCaller = node.getUserInfo();
+						invokeChat(caller, beCaller); // 发起聊天
+						lastNode = node;
 					}
 				}
 			}
@@ -240,7 +245,7 @@ public class MainWindow extends JFrame {
 		searchButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				AddFriendWindow.startUp();
+				AddFriendWindow.startUp(caller, thisWindow);
 			}
 		});
 		funcPane.add(searchButton);
@@ -248,13 +253,28 @@ public class MainWindow extends JFrame {
 	
 	// ------------------------- 逻辑部分 ------------------------- //
 	
+	/** 初始化加载mainPane */
+	private void loadMainPane() {
+		refreshMainPane(caller.getID()); // 添加好友后刷新
+		contentPane.add(mainPane);
+	}
+	
+	/** 刷新并加载mainPane */
+	public void reloadMainPane() {
+		if(mainPane == null)
+			throw new IllegalArgumentException();
+		contentPane.remove(mainPane);
+		refreshMainPane(caller.getID()); // 添加好友后刷新
+		contentPane.add(mainPane);
+	}
+	
 	/**
 	 * 根据用户ID,在数据库查询创建树,返回根节点
 	 * @param ID 用户ID
 	 * @return 成功 根节点   失败 null
 	 * @throws SQLException 
 	 */
-	private FriTreeNode initFriTreeNode(int userID) {
+	private FriTreeNode refreshFriTreeNode(int userID) {
 		FriTreeNode root = null;
 		try {
 			// 创建树的根节点
@@ -263,10 +283,11 @@ public class MainWindow extends JFrame {
 			FriTreeNode groupNode = new FriTreeNode("我的好友");
 			root.addChild(groupNode);	
 			// 创建树的叶节点
-			ArrayList<UserInfo> friUserInfos = DBManager.getFriUserInfos(userID);
 			ArrayList<FriTreeNode> friNodes = new ArrayList<FriTreeNode>();
+			ArrayList<UserInfo> friUserInfos = DBManager.getFriUserInfos(userID);
 			for(UserInfo info : friUserInfos) {
 				FriTreeNode friNode = new FriTreeNode(info); 
+				ResourceManagement.debug("好友ID: " + info.getID());
 				friNodes.add(friNode);
 			}
 			groupNode.addChild(friNodes);
@@ -277,11 +298,29 @@ public class MainWindow extends JFrame {
 		return root;
 	}
 	
-	
+	private void invokeChat(final UserInfo caller, final UserInfo beCaller) {
+		ResourceManagement.debug(caller.getID());
+		ResourceManagement.debug(beCaller.getID());
+		
+		Thread server = new Thread() {
+			public void run() {
+				new Server(caller, beCaller);
+			}
+		};
+		Thread client = new Thread() {
+			public void run() {
+				new Client(beCaller, caller);
+			}
+		};
+		server.start();
+		client.start();
+	}
 	
 	// ------------------------- 重载方法用于单元测试 ------------------------- //
 	
 	private MainWindow() {
+		caller = new UserInfo(
+				331079072, "zzx", "男", 20, "this is a motto", 1);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setBounds(100, 100, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -296,7 +335,7 @@ public class MainWindow extends JFrame {
 	private void initComponents() {
 		this.initHeadPane();
 		this.initSwitchPane();
-		this.initMainPane();
+		this.refreshMainPane(); 
 		this.initFuncPane();
 	}
 	
@@ -307,7 +346,7 @@ public class MainWindow extends JFrame {
 		contentPane.add(headPane);
 	}
 	
-	protected void initMainPane() {
+	protected void refreshMainPane() {
 		mainPane = new JPanel();
 		mainPane.setBounds(0, headPaneHeight + switchPaneHeight,
 				WINDOW_WIDTH, mainPaneHeight);
@@ -345,6 +384,7 @@ public class MainWindow extends JFrame {
 					FriTreeNode node = (FriTreeNode)tree.getLastSelectedPathComponent();
 					if(node.isThirdLayer()) {
 						UserInfo beCaller = node.getUserInfo();
+						invokeChat(caller, beCaller);
 						new Server(caller, beCaller);
 						new Client(caller, beCaller);
 					}

@@ -74,7 +74,7 @@ public class DBManager {
 	 */
 	public static void addFriend(int userID, int friendID) throws SQLException {
 		if (userID == friendID)
-			return;
+			throw new SQLException();
 		// TODO: change
 		FriendInfo userInfo = new FriendInfo(userID, true, "我的好友");
 		FriendInfo friInfo = new FriendInfo(friendID, true, "我的好友");
