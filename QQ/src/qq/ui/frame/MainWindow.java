@@ -4,17 +4,26 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.LayoutManager;
 import java.awt.Rectangle;
 
 import javax.sound.midi.MidiDevice.Info;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollBar;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ScrollPaneLayout;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -48,6 +57,8 @@ import qq.db.util.UserInfoDAO;
 import qq.socket.Client;
 import qq.socket.Server;
 import qq.ui.component.UserInfoPanel;
+import qq.ui.componentFactory.AdapterFactory;
+import qq.ui.componentFactory.PanelFactory;
 import qq.ui.friend.FriTreeCellRenderer;
 import qq.ui.friend.FriTreeNode;
 import qq.util.Constant;
@@ -63,17 +74,20 @@ import com.mysql.jdbc.Constants;
 public class MainWindow extends JFrame {
 
 	final int WINDOW_WIDTH = 283;
-	final int WINDOW_HEIGHT = 617;
+	final int WINDOW_HEIGHT = 650;
 	// 加起来略小于WINDOW_HEIGHT, 因为窗口顶有高度
-	final int headPaneHeight =  (int)(WINDOW_HEIGHT * 0.15);
-	final int switchPaneHeight =  (int)(WINDOW_HEIGHT * 0.07);
-	final int mainPaneHeight =  (int)(WINDOW_HEIGHT * 0.675);
-	final int funcPaneHeight =  (int)(WINDOW_HEIGHT * 0.075);
+	final int headPaneHeight =  (int)(WINDOW_HEIGHT * 0.21);
+	final int switchPaneHeight =  (int)(WINDOW_HEIGHT * 0.05);
+	final int mainPaneHeight =  (int)(WINDOW_HEIGHT * 0.65);
+	final int funcPaneHeight =  (int)(WINDOW_HEIGHT * 0.08);
 	// 主要面板
-	private JPanel contentPane;
-	private UserInfoPanel headPane;
-	private JPanel switchPane;
-	private JPanel mainPane;
+	private JPanel contentPane = null;
+	private JPanel switchPane = null;
+	private JPanel mainPane = null;
+	// 头面板
+	private JPanel headContentPane = null;
+	private UserInfoPanel headPane = null;
+	private JTextField searchField = null;
 	// 方法面板
 	private JPanel funcPane;
 	// 辅助监听
@@ -131,41 +145,92 @@ public class MainWindow extends JFrame {
 	}
 	
 	protected void initHeadPane(final UserInfo info) {
+		// 设置背景
 		Rectangle pos = new Rectangle(0, 0, WINDOW_WIDTH, headPaneHeight);
-		headPane = new UserInfoPanel(info, pos);
-		contentPane.add(headPane);
+		headContentPane = new JPanel() {
+			@Override
+			protected void paintComponent(Graphics g) {
+				Image bgImage = ResourceManagement.getImage(
+						"background.jpg");
+				g.drawImage(bgImage, 0, 0, this.getWidth(), this.getHeight(), this);
+			};
+		};
+		headContentPane.setBounds(pos);
+		headContentPane.setLayout(new BorderLayout());
+		int downBias = 30;
+		// userInfoPane
+		headPane = new UserInfoPanel(info);
+		headPane.setPreferredSize(UserInfoPanel.minPanelSize);
+		headPane.setOpaque(false); // 设置透明
+		headContentPane.add(Box.createVerticalStrut(downBias), BorderLayout.NORTH); // 向下偏移
+		headContentPane.add(headPane, BorderLayout.WEST); // 位于左侧
+		// searchField
+		JLabel iconLabel = new JLabel(
+				ResourceManagement.getScaledIcon("search_icon.png", 20, 20));
+		searchField = new JTextField();
+		searchField.setBorder(BorderFactory.createEmptyBorder());
+		String defaultText = "  搜索:  联系人";
+		searchField.addFocusListener(
+				AdapterFactory.createTextFieldFocusAdapter(searchField, defaultText));
+		searchField.setOpaque(false); // 设置透明
+		
+		Box searchBox = Box.createHorizontalBox();
+		searchBox.add(iconLabel);		
+		searchBox.add(searchField);
+		searchBox.setBorder(BorderFactory.createEtchedBorder()); // 边框
+		headContentPane.add(searchBox, BorderLayout.SOUTH); // 位于下侧
+		
+		contentPane.add(headContentPane);
 	}
 	
 	protected void initSwitchPane() {
 		final int BUTTON_NUMBER = 4;
-		final int BUTTON_WIDTH = 60;
-		final int BUTTON_HEIGHT = 35; 
+		final Dimension SIZE = new Dimension(60, 33); // 增大点击面积
 		final int gapX = 8;
-		final int gapY = 5;
+		final int gapY = 0;
 		
 		switchPane = new JPanel();
-		switchPane.setBackground(Color.LIGHT_GRAY);
+		switchPane.setBackground(Color.WHITE);
 		switchPane.setBounds(0, headPaneHeight, WINDOW_WIDTH, switchPaneHeight);
 		switchPane.setLayout(new FlowLayout(FlowLayout.LEFT, gapX, gapY)); // Flow布局
 		this.contentPane.add(switchPane);
 		
-		// TODO add actionListener
-		JButton switch1 = new JButton("好友");
-		switch1.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
-		switchPane.add(switch1);
+		// 好友
+		JLabel friendLabel = initSwitchLabel(
+				"friendIcon.png", "friendIconEntered.png", "联系人", SIZE);
+		switchPane.add(friendLabel);
+		// 群组
+		JLabel groupLabel = initSwitchLabel(
+				"groupIcon.png", "groupIconEntered.png", "群/讨论组", SIZE);
+		switchPane.add(groupLabel);
+		// 对话
+		JLabel dialogLabel = initSwitchLabel(
+				"dialogIcon.png", "dialogIconEntered.png", "会话", SIZE);
+		switchPane.add(dialogLabel);
+		// 空间
+		JLabel spaceLabel = initSwitchLabel(
+				"spaceIcon.png", "spaceIconEntered.png", "QQ空间", SIZE);
+		switchPane.add(spaceLabel);
+	}
+	
+	private JLabel initSwitchLabel(String exitIcon, String enterIcon, String tipText, Dimension size) {
+		final ImageIcon exitImg = 
+				ResourceManagement.getImageIcon(exitIcon);
+		final ImageIcon enterImg = 
+				ResourceManagement.getImageIcon(enterIcon);
+		final JLabel label = new JLabel(exitImg);
+		label.setPreferredSize(size);
+		label.setToolTipText(tipText);
 		
-		JButton switch2 = new JButton("群组");
-		switch2.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
-		switchPane.add(switch2);
-		
-		JButton switch3 = new JButton("聊天");
-		switch3.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
-		switchPane.add(switch3);
-		
-		JButton switch4 = new JButton("空间");
-		switch4.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
-		switchPane.add(switch4);
-		
+		label.addMouseListener(new MouseAdapter() {
+			public void mouseExited(MouseEvent e) {
+				label.setIcon(exitImg);
+			}
+			public void mouseEntered(MouseEvent e) {
+				label.setIcon(enterImg);				
+			}
+		});
+		return label;
 	}
 	
 	/**
@@ -240,6 +305,7 @@ public class MainWindow extends JFrame {
 		JButton searchButton = new JButton(icon);
 		searchButton.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
 		searchButton.setBorder(null);
+		searchButton.setToolTipText("查找好友");
 		//searchButton.setContentAreaFilled(false); // 设置透明
 		
 		searchButton.addActionListener(new ActionListener() {
