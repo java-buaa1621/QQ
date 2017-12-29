@@ -2,6 +2,7 @@ package qq.ui.component;
 
 import java.awt.Color;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -49,6 +50,25 @@ public class FontAttrib implements Serializable, Cloneable{
         return (FontAttrib)super.clone(); 
     }  
     
+    /**
+     * 文本拆分成单个字的FontAttrib数组，字体为font
+     * @param text 拆分文本
+     * @param font 字体型号
+     * @return
+     */
+    public static ArrayList<FontAttrib> splitText(String text, FontAttrib font) {
+    	if(text == null)
+    		throw new IllegalArgumentException();
+    	
+    	ArrayList<FontAttrib> words = new ArrayList<FontAttrib>();
+		int len = text.length();
+		for(int i = 0; i < len; i++) {
+			String word = text.substring(i, i+1);
+			FontAttrib wordFont = font.toNewText(word);
+			words.add(wordFont);
+		}
+		return words;
+	}
 	/**
 	 * 返回包含相同字体，新的文字的FontAttrib
 	 * @param text

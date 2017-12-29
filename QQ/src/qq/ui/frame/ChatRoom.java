@@ -9,6 +9,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -29,6 +30,8 @@ import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.plaf.metal.MetalBorders.Flush3DBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
@@ -70,8 +73,12 @@ import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import java.io.File;
+import java.io.Serializable;
 import java.net.Socket;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,6 +87,7 @@ import javax.swing.JTextArea;
 import com.mysql.jdbc.Buffer;
 
 import qq.db.info.UserInfo;
+import qq.db.util.DBManager;
 import qq.socket.*;
 
 public class ChatRoom extends JFrame {
@@ -109,6 +117,9 @@ public class ChatRoom extends JFrame {
 	private final Dimension editIconSize = new Dimension(18, 18);
 	private JRadioButton emojiButton = null;
 	private JRadioButton pictureButton = null;
+	private JRadioButton screenShotButton = null;
+	private JRadioButton shakeButton = null;
+	private JRadioButton sendFileButton = null;
 	// 用户字体区
 	private Box fontBox = null;
 	Dimension fontComboBoxSize = new Dimension(50,20); // 好像是内部字大小
@@ -131,7 +142,7 @@ public class ChatRoom extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					//createWindow();
+					// createWindow();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -146,7 +157,9 @@ public class ChatRoom extends JFrame {
 	}*/
 	
 	public static ChatRoom createWindow(UserInfo caller, UserInfo beCaller) {
+		Func.useWindowsStyle(); // 设置使用WindowsStyle创建组件
 		ChatRoom chatRoom = new ChatRoom(caller, beCaller);
+		Func.useJavaStyle(); // 取消使用WindowsStyle创建组件
 		chatRoom.setVisible(true);
 		return chatRoom;
 	}
@@ -165,7 +178,6 @@ public class ChatRoom extends JFrame {
 		this.caller = caller;
 		this.beCaller = beCaller;
 		
-		Func.useWindowsStyle();
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 600, 550);
 		setResizable(false);
@@ -189,15 +201,6 @@ public class ChatRoom extends JFrame {
 		mainBox.add(fontBox);
 		mainBox.add(inputBox);
 		getContentPane().add(mainBox, BorderLayout.CENTER);
-		
-//		FontAttrib textInfo = new FontAttrib();
-//		textInfo.setText("你好");
-//		textInfo.setName("宋体");
-//		textInfo.setSize(40);
-//		textInfo.setStyle(FontAttrib.BOLD);
-//		textInfo.setColor(new Color(0, 0, 0));
-//		textInfo.setBackColor(new Color(200, 0, 0));
-//		displayText(textInfo);
 	}
 
 	protected void initHeadPanel() {
@@ -206,8 +209,13 @@ public class ChatRoom extends JFrame {
 	}
 	
 	protected void initQQShow(){
-		qqShowPanel = new JLabel( 
-				ResourceManagement.getScaledIcon("qqshow.png", qqShowSize));
+		if(beCaller.getSex().equals("男")) {
+			qqShowPanel = new JLabel( 
+					ResourceManagement.getScaledIcon("qqshow_man.png", qqShowSize));
+		} else {
+			qqShowPanel = new JLabel( 
+					ResourceManagement.getScaledIcon("qqshow_woman.png", qqShowSize));
+		}
 	}
 	
 	protected void initEditPanel() {
@@ -219,6 +227,12 @@ public class ChatRoom extends JFrame {
 		editBox.add(emojiButton);
 		initPictureButton();
 		editBox.add(pictureButton);
+		initScreenShotButton();
+		editBox.add(screenShotButton);
+		initShakeButton();
+		editBox.add(shakeButton);
+		initSendFileButton();
+		editBox.add(sendFileButton);
 		
 		editBox.add(Box.createHorizontalGlue()); // 填充占位
 	}
@@ -264,12 +278,11 @@ public class ChatRoom extends JFrame {
 				if(!(e.getOppositeComponent() instanceof EmojiDialog)) {
 					EmojiDialog.close();
 				}
-				// ResourceManagement.debug(e.gesizepositeComponent().getClass().getName());
 			}
 		});
 	}
 	
-	protected void initPictureButton(){
+	protected void initPictureButton() {
 		pictureButton = new JRadioButton(
 				ResourceManagement.getScaledIcon("picture.png", editIconSize));
 		pictureButton.setToolTipText("图片");
@@ -278,12 +291,55 @@ public class ChatRoom extends JFrame {
 				AdapterFactory.createMouseEnterAndExitAdapter(pictureButton));
 		pictureButton.addActionListener(new ActionListener() { // 插入图片事件
 			public void actionPerformed(ActionEvent arg0) {
-				JFileChooser f = new JFileChooser(); // 查找文件
-				f.showOpenDialog(null);
-				File file = f.getSelectedFile(); // TODO 检测是否为图片
+				File file = getSendFile();
 				if(file != null) {
 					ImageIcon icon = new ImageIcon(file.getPath());
 					sendPicture(icon); // 插入图片					
+				}
+			}
+		});
+	}
+	
+	protected void initScreenShotButton() {
+		screenShotButton = new JRadioButton(
+				ResourceManagement.getScaledIcon("screenShot.png", editIconSize));
+		screenShotButton.setToolTipText("截屏");
+		
+		screenShotButton.addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(screenShotButton));
+		screenShotButton.addActionListener(new ActionListener() { // 插入图片事件
+			public void actionPerformed(ActionEvent arg0) {
+				ScreenShotWindow.startUp(thisRoom); // 开始截屏
+			}
+		});
+	}
+	
+	protected void initShakeButton() {
+		shakeButton = new JRadioButton(
+				ResourceManagement.getScaledIcon("shake.png", editIconSize));
+		shakeButton.setToolTipText("向好友发送窗口抖动");
+		
+		shakeButton.addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(shakeButton));
+		shakeButton.addActionListener(new ActionListener() { 
+			public void actionPerformed(ActionEvent arg0) {
+				sendShake(); // 发送抖动
+			}
+		});
+	}
+	
+	protected void initSendFileButton() {
+		sendFileButton = new JRadioButton(
+				ResourceManagement.getScaledIcon("sendFile.png", editIconSize));
+		sendFileButton.setToolTipText("发送文件");
+		
+		sendFileButton.addMouseListener(
+				AdapterFactory.createMouseEnterAndExitAdapter(sendFileButton));
+		sendFileButton.addActionListener(new ActionListener() { 
+			public void actionPerformed(ActionEvent arg0) {
+				File file = getSendFile();
+				if(file != null) {
+					sendFile(file);
 				}
 			}
 		});
@@ -379,8 +435,7 @@ public class ChatRoom extends JFrame {
 		// 添加ScrollPane
 		historyScrollPane = new JScrollPane(historyPane);
 		historyScrollPane.setPreferredSize(historySize);
-		if(!Constant.DEBUG)
-			historyScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		historyScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
 		initTextBuffer();
 		initHistoryText();
@@ -394,43 +449,43 @@ public class ChatRoom extends JFrame {
 		textReceivedBuffer = new TextBuffer() {
 			@Override
 			protected void dealTextInfo(Object[] textInfos, int size) {
-				for(int i = 0; i < size; i++) {
-					Object textInfo =  textInfos[i];
-					if(textInfo instanceof ImageIcon) {
-						displayIcon((ImageIcon) textInfo);
-					} else if(textInfo instanceof FontAttrib) {
-						displayWords((FontAttrib) textInfo);
+				if(size > 0) {
+					for(int i = 0; i < size; i++) {
+						Object textInfo =  textInfos[i];
+						if(textInfo instanceof ImageIcon) {
+							displayIcon((ImageIcon) textInfo);
+						} else if(textInfo instanceof FontAttrib) {
+							displayWords((FontAttrib) textInfo);
+						}
 					}
 				}
+				changeLine();
+
 			}
 		};
 		textSendBuffer = new TextBuffer() {
 			@Override
 			protected void dealTextInfo(Object[] textInfos, int size) {
-				takeLeftLine();
-				for(int i = 0; i < size; i++) {
-					Object textInfo =  textInfos[i];
-					if(textInfo instanceof ImageIcon) {
-						displayIcon((ImageIcon) textInfo);
-					} else if(textInfo instanceof FontAttrib) {
-						displayWords((FontAttrib) textInfo);
+				if(size > 0) {
+					takeLeftLine(); // 添加左侧填充
+					for(int i = 0; i < size; i++) {
+						Object textInfo =  textInfos[i];
+						if(textInfo instanceof ImageIcon) {
+							displayIcon((ImageIcon) textInfo);
+						} else if(textInfo instanceof FontAttrib) {
+							displayWords((FontAttrib) textInfo);
+							ResourceManagement.debug("debug:" + ((FontAttrib) textInfo).getText() );
+						}
 					}
+					changeLine();
 				}
+				
 			}
 		};
 	}
 	
 	protected void initHistoryText() {
 		// TODO:
-	}
-	
-	protected void displayTime() {
-		try {
-			displayWords(new FontAttrib(Func.getTime()));
-			changeLine(2);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	/**
@@ -447,7 +502,7 @@ public class ChatRoom extends JFrame {
 		displaySendText(textInfo);
 	}
 	
-	/** 先对图片进行压缩检测处理，再发送 */
+	/** 先对图片进行压缩检测处理，再发送,并进行窗口展示 */
 	public void sendPicture(ImageIcon picture) {
 		double ratio = ResourceManagement.getScaledRatio(
 				picture, pictureLimitSize.width, pictureLimitSize.height);
@@ -507,39 +562,55 @@ public class ChatRoom extends JFrame {
 		// historyPane.insertComponent(new JButton("button"));
 	}
 	
+	protected void displaySystemText(String text) {
+		displayWords(new FontAttrib("                          ")); // 居中
+		displayWords(new FontAttrib(text));
+		changeLine(2);
+	}
+	
+	protected void displayTime() {
+		displaySystemText(Func.getTime());
+		changeLine(2);
+	}
+	
 	/** 展示用户头像 */
 	private void displayUser(UserInfo info) {
 		ImageIcon icon = ResourceManagement.getHeadIcon(info.getHeadIconIndex());
-		displayIcon(icon);
 		FontAttrib prefix;
 		if(info.getID() == caller.getID()) { // 使用者
+			takeLeftLine();
+			displayIcon(icon);
 			prefix = new FontAttrib("你说:  ");
+			displayWords(prefix);
 		} else { 							// 对方
+			displayIcon(icon);
 			prefix = new FontAttrib(info.getMotto() + "说:  ");
+			displayWords(prefix);
 		}
-		displayWords(prefix);
+		
 		changeLine(2);
 	}
 	
 	/** 展示输入图片 */
-	private void displayPicture(ImageIcon picture) {
+	private void displayPicture(ImageIcon picture, TextBuffer buffer) {
 		if(picture == null)
 			throw new IllegalArgumentException();
 		
-		displayIcon(picture);
+		buffer.insert(picture);
+		buffer.flush();
 		changeLine(2);
 	}
 	
 	/** 展示输入含emoji文本 */
-	private void displayText(FontAttrib textInfo) {
+	private void displayText(FontAttrib textInfo, TextBuffer buffer) {
 		if(textInfo == null)
 			throw new IllegalArgumentException();
-
+		// 设置匹配模式
 		String text = textInfo.getText();
 		Pattern pattern = Pattern.compile("(\\[\\d+\\])"); // 匹配类型: [some ints...]
 		Matcher matcher = pattern.matcher(text);
-		
-		int restStart = 0;
+		// 查找匹配串
+		int restStart = 0; 
 		while (matcher.find()) {
 			String matchStr = matcher.group(1);
 			String indexStr = matchStr.substring(1, matchStr.length() - 1);
@@ -547,46 +618,107 @@ public class ChatRoom extends JFrame {
 			String displayText = null;
 			if(Func.isValidEmoji(index)) { // 找到合法emoji
 				displayText = text.substring(restStart, matcher.start());
-				displayWords(textInfo.toNewText(displayText));
-				displayIcon(ResourceManagement.getEmojiIcon(index));
-			} else {
+				ArrayList<FontAttrib>words = FontAttrib.splitText(displayText, textInfo);
+				for(FontAttrib word : words)
+					buffer.insert(word);
+				buffer.insert(ResourceManagement.getEmojiIcon(index)); // 图片
+			} else {					   // 没有 
 				displayText = text.substring(restStart, matcher.end());
-				displayWords(textInfo.toNewText(displayText));
+				ArrayList<FontAttrib>words = FontAttrib.splitText(displayText, textInfo); 
+				for(FontAttrib word : words)
+					buffer.insert(word);
 			}
+			// 截断前半部分的字符串
 			restStart = matcher.end();
 		}
 		// 剩余文本不存在寻找的字段，输出剩余的文字
 		String restText = text.substring(restStart, text.length());
-		displayWords(textInfo.toNewText(restText));
+		ArrayList<FontAttrib> words = FontAttrib.splitText(restText, textInfo);
+		for(FontAttrib word : words)
+			buffer.insert(word);
+		
+		buffer.flush();
 		changeLine(2);
 	}
 	
 	public void displayReceivedPicture(ImageIcon picture) {
 		displayUser(beCaller);
-		displayPicture(picture);
+		displayPicture(picture, textReceivedBuffer);
 	}
 	
 	public void displayReceivedText(FontAttrib textInfo) {
 		displayUser(beCaller);
-		displayText(textInfo);
+		displayText(textInfo, textReceivedBuffer);
 	}
 	
 	private void displaySendPicture(ImageIcon picture) {
-		takeLeftLine();
 		displayUser(caller);
-		takeLeftLine();
-		displayPicture(picture);
+		displayPicture(picture, textSendBuffer);
 	}
 	
 	private void displaySendText(FontAttrib textInfo) {
-		takeLeftLine();
 		displayUser(caller);
-		takeLeftLine();
-		displayText(textInfo);
+		displayText(textInfo, textSendBuffer);
 	}
 	
 	
 	// ------------------------------------- 逻辑部分 ------------------------------- //
+	
+	private File getSendFile() {
+		JFileChooser jfc = Func.invokeOpenFileChoose("发送", this);
+		return jfc.getSelectedFile(); 
+	}
+	
+	private void sendFile(File file) {
+		displaySystemText("您发送了一个文件");
+		writerThread.setFile(file);
+	}
+	
+	public void receivedFile(File file) {
+		displaySystemText("您收到了一个文件");
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyymmddHHmmss");
+		String fileName = sdf.format(new Date());
+		File filePath = FileSystemView.getFileSystemView().getHomeDirectory(); // 获得系统根目录Desktop
+		File defaultFile = new File(filePath + File.separator + fileName + Func.getFormat(file));
+		
+		JFileChooser jfc = new JFileChooser();
+		jfc.setSelectedFile(defaultFile);
+		jfc.setDialogTitle("保存");
+		int flag = jfc.showSaveDialog(this);
+		if (flag == JFileChooser.APPROVE_OPTION) { // 选择了接收文件
+			File desFile = jfc.getSelectedFile();
+			Func.copyFile(desFile.getPath(), file);
+		}
+	}
+	
+	private void sendShake() {
+		displaySystemText("您发送了一个窗口抖动");
+		writerThread.setShake(new Shake());
+	}
+	
+	public void performShake() {
+		displaySystemText("您收到了一个窗口抖动");
+		int x = this.getX();
+		int y = this.getY();
+		int time = 20;
+		int bias = 3;
+		while(time-- > 0) {
+			if ((time & 1) == 0) { // 奇偶情况
+				x += bias;
+				y += bias;
+			} else {
+				x -= bias;
+				y -= bias;
+			}
+			this.setLocation(x, y);
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
 	
 	/**
 	 * 从inputArea以及编辑面板获取文本信息
@@ -636,6 +768,7 @@ public class ChatRoom extends JFrame {
 		return textInfo;
 	}
 	
+	/** 输入区添加 */
 	public void insertText(String text) {
 		inputArea.append(text);
 	}
@@ -652,7 +785,7 @@ public class ChatRoom extends JFrame {
 
 abstract class TextBuffer {
 	
-	protected final static int MAX_SIZE = 70; // 容量
+	protected final static int MAX_SIZE = 60; // 容量
 	protected Object[] textInfo;
 	protected int size; // 相当于当前总数
 	
@@ -681,6 +814,8 @@ abstract class TextBuffer {
 		clear();
 	}
 	
+	/** flush时调用 */
 	protected abstract void dealTextInfo(Object[] textInfos, int size);
 			
 }
+

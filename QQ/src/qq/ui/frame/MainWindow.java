@@ -261,11 +261,13 @@ public class MainWindow extends JFrame {
 	
 	/** 刷新并加载mainPane */
 	public void reloadMainPane() {
+		ResourceManagement.debug("reload");
 		if(mainPane == null)
 			throw new IllegalArgumentException();
 		contentPane.remove(mainPane);
 		refreshMainPane(caller.getID()); // 添加好友后刷新
 		contentPane.add(mainPane);
+		contentPane.updateUI(); // 重新绘制
 	}
 	
 	/**

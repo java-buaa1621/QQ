@@ -2,6 +2,7 @@ package qq.socket;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -38,6 +39,14 @@ public class SocketReaderThread extends Thread{
 					ImageIcon picture = (ImageIcon) obj;
 					if(picture != null) 
 						chatWindow.displayReceivedPicture(picture);
+				} else if(obj instanceof Shake) {
+					Shake shake = (Shake) obj;
+					if(shake != null) 
+						chatWindow.performShake();
+				} else if(obj instanceof File) {
+					File file = (File) obj;
+					if(file != null) 
+						chatWindow.receivedFile(file);
 				}
 				
 			}

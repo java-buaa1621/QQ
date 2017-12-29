@@ -1,10 +1,17 @@
 package qq.util;
 
+import java.awt.Component;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 
 /**
@@ -16,6 +23,15 @@ public abstract class Func {
 	public static void useWindowsStyle() {
 		try { 
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/** 使用Java的界面风格 */
+	public static void useJavaStyle() {
+		try { 
+			UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -100,6 +116,61 @@ public abstract class Func {
 	public static String getTime() {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 		return df.format(new Date());// new Date()为获取当前系统时间
+	}
+	
+	/** 将srcFile拷贝到本机目录 */
+	public static void copyFile(String desPath, File srcFile) {
+		try {
+			File desFile = new File(desPath);
+			int size = 100;
+			byte[] b = new byte[size];
+		
+			FileOutputStream fos = new FileOutputStream(desFile);
+			FileInputStream fis = new FileInputStream(srcFile);
+			int readLen;
+			while ((readLen = fis.read(b, 0, size)) != -1) {
+				fos.write(b, 0, readLen);
+			}
+			fis.close(); 
+			fos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/** 本机拷贝 */
+	public static void copyFile(String desPath, String srcPath) {
+		copyFile(desPath, new File(srcPath));
+	}
+	
+	/** 返回文件类型， 格式例如:  .jpg */ 
+	public static String getFormat(File file) {
+		if(file == null)
+			throw new IllegalArgumentException();
+		
+		String path = file.getPath();
+		int len = path.length();
+		String format = null; // 找不到
+		for(int i = len-1; i>=0; i--) {
+			if(path.charAt(i) == '.') {
+				format = path.substring(i, len);
+				break;
+			}
+		}
+		return format;
+	}
+	
+	/**
+	 * 
+	 * @param title
+	 * @param parent 外部组件
+	 * @return
+	 */
+	public static JFileChooser invokeOpenFileChoose(String title, Component parent) {
+		JFileChooser jfc = new JFileChooser(); // 查找文件
+		jfc.setDialogTitle(title); 
+		jfc.showOpenDialog(parent);
+		return jfc;
 	}
 	
 }

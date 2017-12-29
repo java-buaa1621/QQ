@@ -203,8 +203,8 @@ public class AddFriendWindow extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					DBManager.addFriend(caller.getID(), addID);
-					frame.dispose();
 					callerWindow.reloadMainPane();
+					frame.dispose();
 				} catch (SQLException e1) {
 					AlertWindow.startUp("添加用户不存在、和用户相同或其他错误");
 				}

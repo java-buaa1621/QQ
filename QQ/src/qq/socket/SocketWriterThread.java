@@ -3,12 +3,14 @@ package qq.socket;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import javax.swing.ImageIcon;
+import javax.swing.text.StyledEditorKit.BoldAction;
 
 import qq.ui.component.FontAttrib;
 import qq.ui.frame.ChatRoom;
@@ -23,6 +25,8 @@ public class SocketWriterThread extends Thread{
 	// textInfo用于临时保存点击发送按钮后发送的信息
 	private FontAttrib textInfo = null;
 	private ImageIcon picture = null;
+	private Shake shake = null;
+	private File file = null;
 	
 	/**
 	 * 
@@ -53,11 +57,22 @@ public class SocketWriterThread extends Thread{
 				if(picture != null) {
 					sendPicture(picture);
 				}
+				Shake shake = obtainShake();
+				if(shake != null) {
+					sendShake(shake);
+				}
+				File file = obtainFile();
+				if(file != null) {
+					sendFile(file);
+				}
 			}
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	// ------------------------- obtain --------------------------------- //
 	
 	/**
 	 * 
@@ -77,6 +92,21 @@ public class SocketWriterThread extends Thread{
 		return sendPicture;	
 	}
 	
+	protected Shake obtainShake() throws IOException {
+		Shake shake = this.shake;
+		this.shake = null;
+		return shake;	
+	}
+	
+	protected File obtainFile() throws IOException {
+		File file = this.file;
+		this.file = null;
+		return file;	
+	}
+	
+	
+	// ------------------------- send --------------------------------- //
+	
 	protected void sendTextInfo(FontAttrib textInfo) throws IOException {
 		oos.writeObject(textInfo);
 		oos.flush();
@@ -87,12 +117,33 @@ public class SocketWriterThread extends Thread{
 		oos.flush();
 	}
 	
+	protected void sendShake(Shake shake) throws IOException {
+		oos.writeObject(shake);
+		oos.flush();
+	}
+	
+	protected void sendFile(File file) throws IOException {
+		oos.writeObject(file);
+		oos.flush();
+	}
+	
+	
+	// ------------------------- set --------------------------------- //
+	
 	public void setTextInfo(FontAttrib textInfo) {
 		this.textInfo = textInfo;
 	}
 	
 	public void setPicture(ImageIcon picture) {
 		this.picture = picture;
+	}
+	
+	public void setShake(Shake shake) {
+		this.shake = shake;
+	}
+	
+	public void setFile(File file) {
+		this.file = file;
 	}
 	
 }
